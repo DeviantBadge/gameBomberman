@@ -14,6 +14,7 @@ import ru.atom.chat.socket.message.request.messagedata.LogoutUser;
 import ru.atom.chat.socket.message.request.messagedata.RegisterUser;
 import ru.atom.chat.socket.message.response.Mail;
 import ru.atom.chat.socket.message.response.ResponseData;
+import ru.atom.chat.socket.services.game.GameService;
 import ru.atom.chat.socket.topics.ResponseTopic;
 import ru.atom.chat.socket.util.JsonHelper;
 import ru.atom.chat.socket.message.request.InGameMovement;
@@ -26,7 +27,7 @@ public class SockEventHandler extends TextWebSocketHandler {
     private Logger log = LoggerFactory.getLogger(SockEventHandler.class);
 
     @Autowired
-    private ChatService chatService;
+    private GameService gameService;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -47,14 +48,14 @@ public class SockEventHandler extends TextWebSocketHandler {
             switch (socketMessage.getTopic()) {
                 case REGISTER:
                     RegisterUser registerUser = JsonHelper.fromJson(socketMessage.getData(), RegisterUser.class);
-                    response = chatService.register(registerUser);
+                    response = gameService.register(registerUser);
                     if (response.getStatus() == ResponseTopic.OK)
                         SessionsList.matchSessionWithName(session, registerUser.getSender());
                     handleResponse(session, response);
                     break;
                 case LOGIN:
                     LoginUser loginUser = JsonHelper.fromJson(socketMessage.getData(), LoginUser.class);
-                    response = chatService.login(loginUser);
+                    response = gameService.login(loginUser);
                     if (response.getStatus() == ResponseTopic.OK)
                         SessionsList.matchSessionWithName(session, loginUser.getSender());
 
@@ -62,12 +63,12 @@ public class SockEventHandler extends TextWebSocketHandler {
                     break;
                 case MESSAGE:
                     InGameMovement messageBody = JsonHelper.fromJson(socketMessage.getData(), InGameMovement.class);
-                    response = chatService.say(messageBody);
+                    response = gameService.say(messageBody);
                     handleResponse(session, response);
                     break;
                 case LOGOUT:
                     LogoutUser logoutUser = JsonHelper.fromJson(socketMessage.getData(), LogoutUser.class);
-                    response = chatService.logout(logoutUser);
+                    response = gameService.logout(logoutUser);
                     if (response.getStatus() == ResponseTopic.OK)
                         SessionsList.unfastenSessionWithName(logoutUser.getSender());
                     handleResponse(session, response);

@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import ru.atom.chat.socket.services.ChatService;
+import ru.atom.chat.socket.services.game.GameService;
 
 @Controller
 @RequestMapping("chat")
@@ -17,7 +17,7 @@ public class MatchMakerController {
     private static final Logger log = LoggerFactory.getLogger(MatchMakerController.class);
 
     @Autowired
-    private ChatService chatService;
+    private GameService gameService;
 
     /**
      * curl -X GET -i localhost:8080/chat/chat
@@ -27,7 +27,7 @@ public class MatchMakerController {
             method = RequestMethod.GET,
             produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> chat() {
-        String messageList = chatService.allMessages();
+        String messageList = gameService.allMessages();
         log.info(messageList);
 
         return new ResponseEntity<>(messageList, HttpStatus.OK);
@@ -41,7 +41,7 @@ public class MatchMakerController {
             method = RequestMethod.GET,
             produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> users() {
-        String userList = chatService.allUsers();
+        String userList = gameService.allUsers();
         log.info(userList);
         return new ResponseEntity<>(userList, HttpStatus.OK);
     }
