@@ -2,25 +2,22 @@ package ru.atom.chat.socket.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.HtmlUtils;
 import ru.atom.chat.dao.MessageDao;
 import ru.atom.chat.dao.UserDao;
 import ru.atom.chat.message.HrefHandler;
 import ru.atom.chat.message.Message;
-import ru.atom.chat.socket.message.request.messagedata.IncomingMessage;
+import ru.atom.chat.socket.message.request.InGameMovement;
 import ru.atom.chat.socket.message.request.messagedata.LoginUser;
 import ru.atom.chat.socket.message.request.messagedata.LogoutUser;
 import ru.atom.chat.socket.message.request.messagedata.RegisterUser;
 import ru.atom.chat.socket.message.response.ResponseData;
-import ru.atom.chat.socket.message.response.OperationResponse;
 import ru.atom.chat.socket.message.response.messagedata.OutgoingChatMessage;
-import ru.atom.chat.socket.message.response.messagedata.OutgoingUser;
+import ru.atom.chat.socket.message.response.messagedata.Replica;
 import ru.atom.chat.socket.topics.IncomingTopic;
 import ru.atom.chat.socket.topics.MailingType;
 import ru.atom.chat.socket.topics.OutgoingTopic;
-import ru.atom.chat.socket.topics.ResponseTopic;
 import ru.atom.chat.socket.util.JsonHelper;
 import ru.atom.chat.socket.util.SessionsList;
 import ru.atom.chat.user.User;
@@ -32,13 +29,8 @@ import java.util.List;
 public class ChatService {
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
 
-    @Autowired
-    private UserDao userDao;
 
-    @Autowired
-    private MessageDao messageDao;
-
-    public ResponseData say(IncomingMessage message) {
+    public ResponseData say(InGameMovement message) {
         ResponseData response = new ResponseData(IncomingTopic.MESSAGE);
 
         User user = userDao.getByLogin(message.getSender());
@@ -143,7 +135,7 @@ public class ChatService {
         response.add(response.buildMail(
                 MailingType.TO_ALL,
                 OutgoingTopic.NEW_USER,
-                JsonHelper.toJson(new OutgoingUser(newUser)))
+                JsonHelper.toJson(new Replica(newUser)))
         );
         response.addCommonMessage(message);
         return response;
@@ -187,11 +179,11 @@ public class ChatService {
 
     public String allUsers() {
         List<User> users = userDao.findAll();
-        List<OutgoingUser> outgoingUsers = new ArrayList<>();
+        List<Replica> replicas = new ArrayList<>();
         for (User user : users) {
-            outgoingUsers.add(new OutgoingUser(user));
+            replicas.add(new Replica(user));
         }
-        return JsonHelper.toJson(outgoingUsers);
+        return JsonHelper.toJson(replicas);
     }
 
     public boolean isLoggedIn(User user) {

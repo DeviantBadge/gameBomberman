@@ -14,13 +14,9 @@ import ru.atom.chat.socket.message.request.messagedata.LogoutUser;
 import ru.atom.chat.socket.message.request.messagedata.RegisterUser;
 import ru.atom.chat.socket.message.response.Mail;
 import ru.atom.chat.socket.message.response.ResponseData;
-import ru.atom.chat.socket.message.response.ResponseMessage;
-import ru.atom.chat.socket.message.response.OperationResponse;
-import ru.atom.chat.socket.topics.IncomingTopic;
-import ru.atom.chat.socket.topics.OutgoingTopic;
 import ru.atom.chat.socket.topics.ResponseTopic;
 import ru.atom.chat.socket.util.JsonHelper;
-import ru.atom.chat.socket.message.request.messagedata.IncomingMessage;
+import ru.atom.chat.socket.message.request.InGameMovement;
 import ru.atom.chat.socket.util.SessionsList;
 
 import java.io.IOException;
@@ -65,7 +61,7 @@ public class SockEventHandler extends TextWebSocketHandler {
                     handleResponse(session, response);
                     break;
                 case MESSAGE:
-                    IncomingMessage messageBody = JsonHelper.fromJson(socketMessage.getData(), IncomingMessage.class);
+                    InGameMovement messageBody = JsonHelper.fromJson(socketMessage.getData(), InGameMovement.class);
                     response = chatService.say(messageBody);
                     handleResponse(session, response);
                     break;

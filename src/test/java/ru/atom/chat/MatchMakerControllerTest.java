@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Ignore
 @RunWith(SpringRunner.class)
 @WebMvcTest
-public class ChatControllerTest {
+public class MatchMakerControllerTest {
 
     private static NameGen gen = new NameGen();
 
