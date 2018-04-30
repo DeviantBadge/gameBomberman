@@ -9,40 +9,39 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.atom.chat.socket.services.game.GameService;
+import ru.atom.chat.socket.services.game.GameSession;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Controller
-@RequestMapping("chat")
+@RequestMapping("matchmaker")
 public class MatchMakerController {
     private static final Logger log = LoggerFactory.getLogger(MatchMakerController.class);
 
     @Autowired
     private GameService gameService;
 
+    private final ConcurrentLinkedQueue<GameSession> sessions = new ConcurrentLinkedQueue<>();
+
     /**
      * curl -X GET -i localhost:8080/chat/chat
      */
     @RequestMapping(
-            path = "chat",
-            method = RequestMethod.GET,
+            path = "join",
+            method = RequestMethod.POST,
             produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> chat() {
-        String messageList = gameService.allMessages();
-        log.info(messageList);
+    public ResponseEntity<String> join(@RequestParam("name") String name) {
+        GameSession session;
+        if ((session = sessions.poll()) == null) {
+            session = gameService.createGame(name);
+            sessions.add(session);
+        } else {
+            session.addPlayer(name);
+        }
 
-        return new ResponseEntity<>(messageList, HttpStatus.OK);
-    }
-
-    /**
-     * curl -i localhost:8080/chat/users
-     */
-    @RequestMapping(
-            path = "users",
-            method = RequestMethod.GET,
-            produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> users() {
-        String userList = gameService.allUsers();
-        log.info(userList);
-        return new ResponseEntity<>(userList, HttpStatus.OK);
+        log.warn(session.getId().toString());
+        return new ResponseEntity<>(session.getId().toString(), HttpStatus.OK);
     }
 }
