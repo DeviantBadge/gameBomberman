@@ -11,4 +11,8 @@ public class GameService {
     public GameSession createGame(String playerName) {
         return new GameSession(playerName);
     }
+
+    public GameSession findGameById(String id) {
+        return new GameSession("");
+    }
 }

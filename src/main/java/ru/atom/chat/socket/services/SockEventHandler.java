@@ -23,7 +23,8 @@ public class SockEventHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
         SessionsList.addSession(session);
-        // int inGameNum = gameService.findSession(id).playerReady(session);
+        String gameId = "";
+        int inGameNum = gameService.findGameById(gameId).playerReady(session);
         // session.send(new TextMessage(String.valueOf(inGameNum)));
         log.info("Socket Connected: " + session);
     }
