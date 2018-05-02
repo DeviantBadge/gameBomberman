@@ -17,8 +17,7 @@ public class GameSession {
     }
 
     public int playerReady(WebSocketSession session) {
-        // here we match session with player
-
+        // here we match session with player num
         return 0;
     }
 }
