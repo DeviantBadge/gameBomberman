@@ -34,8 +34,6 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
     var self = this;
     this.socket.onmessage = function (event) {
         var msg = JSON.parse(event.data);
-        alert(event);
-        console.log(msg);
         if (self.handler[msg.topic] === undefined) {
             return;
         }

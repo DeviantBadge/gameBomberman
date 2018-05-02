@@ -8,10 +8,13 @@ var MessageBroker = function () {
         'Bonus': this.handleBonus
     }
 };
+var a = 0;
 
 MessageBroker.prototype.handleReplica = function (msg) {
     var gameObjects = JSON.parse(msg.data);
-    console.log(gameObjects);
+    a ++;
+    console.log(a);
+    console.log(msg);
     gGameEngine.game.gc(gameObjects);
 };
 
@@ -40,7 +43,6 @@ MessageBroker.prototype.handlePawn = function(obj) {
 };
 
 MessageBroker.prototype.handleBomb = function(obj) {
-    console.log(obj);
     var bomb = gGameEngine.game.bombs.find(function (el) {
         return el.id === obj.id;
     });
