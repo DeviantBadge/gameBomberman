@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Service
 public class SockEventHandler extends TextWebSocketHandler {
-    static Pawn pawn = new Pawn(60,60);
+    static Pawn pawn = new Pawn(32,32);
 
     private static Logger log = LoggerFactory.getLogger(SockEventHandler.class);
     private static int amount = 0;
@@ -61,6 +61,9 @@ public class SockEventHandler extends TextWebSocketHandler {
         switch(mes.get("topic").toString()) {
             case "MOVE":
                 System.out.println(json);
+
+                pawn.setDirection(Pawn.Direction.valueOf(dir));
+                objects.add(pawn);
 
                 bomb = new Bomb(new Position(96, 0));
                 objects.add(bomb);
@@ -120,8 +123,7 @@ public class SockEventHandler extends TextWebSocketHandler {
                 wall = new Wall(new Position(640, 0));
                 objects.add(wall);
 
-                pawn.setDirection(Pawn.Direction.valueOf(dir));
-                objects.add(pawn);
+                objects.add(new Pawn(64,32));
 
                 st = JsonHelper.toJson(objects);
                 break;

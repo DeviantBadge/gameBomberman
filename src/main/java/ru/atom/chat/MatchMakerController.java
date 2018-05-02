@@ -25,9 +25,6 @@ public class MatchMakerController {
 
     private final ConcurrentLinkedQueue<GameSession> sessions = new ConcurrentLinkedQueue<>();
 
-    /**
-     * curl -X GET -i localhost:8080/chat/chat
-     */
     @RequestMapping(
             path = "join",
             method = RequestMethod.POST,
@@ -37,9 +34,8 @@ public class MatchMakerController {
         if ((session = sessions.poll()) == null) {
             session = gameService.createGame(name);
             sessions.add(session);
-        } else {
-            session.addPlayer(name);
         }
+        session.addPlayer(name);
 
         log.warn(session.getId().toString());
         return new ResponseEntity<>(session.getId().toString(), HttpStatus.OK);

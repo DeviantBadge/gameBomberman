@@ -6,7 +6,6 @@ import ru.atom.chat.socket.objects.base.Position;
 
 public class Bomb extends GameObject {
 
-
     public Bomb(@NotNull Position position) {
         super("Bomb", position);
     }
