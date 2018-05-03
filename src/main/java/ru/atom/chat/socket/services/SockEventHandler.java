@@ -9,6 +9,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import ru.atom.chat.socket.message.response.OutgoingMessage;
+import ru.atom.chat.socket.objects.GameState;
 import ru.atom.chat.socket.objects.base.Position;
 import ru.atom.chat.socket.objects.ingame.*;
 import ru.atom.chat.socket.services.game.GameService;
@@ -17,6 +18,7 @@ import ru.atom.chat.socket.util.JsonHelper;
 import ru.atom.chat.socket.util.SessionsList;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.Map;
 @Service
 public class SockEventHandler extends TextWebSocketHandler {
     static Pawn pawn = new Pawn(32,32);
+    GameState gameState = new GameState();
 
     private static Logger log = LoggerFactory.getLogger(SockEventHandler.class);
     private static int amount = 0;
@@ -143,7 +146,7 @@ public class SockEventHandler extends TextWebSocketHandler {
         }
 
         try {
-            OutgoingMessage message1 = new OutgoingMessage(MessageType.REPLICA, st);
+            OutgoingMessage message1 = new OutgoingMessage(MessageType.REPLICA, gameState.getReplica());
             session.sendMessage(new TextMessage(JsonHelper.toJson(message1)));
         } catch (IOException e) {
             e.printStackTrace();

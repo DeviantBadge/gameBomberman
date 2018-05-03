@@ -1,7 +1,5 @@
 package ru.atom.chat.socket.objects.base;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +15,11 @@ public class Position {
         this.y = y;
     }
 
+    public Position(@NotNull Position position) {
+        this.x = position.x;
+        this.y = position.y;
+    }
+
     public Integer getX() {
         return x;
     }
@@ -28,5 +31,17 @@ public class Position {
     @Override
     public String toString() {
         return "{x:" + x + "y:" + y + "}";
+    }
+
+    @Override
+    public boolean equals(Object anObject) {
+        if (this == anObject) {
+            return true;
+        }
+        if (anObject instanceof Position) {
+            Position pos = (Position) anObject;
+            return pos.x.equals(this.x) && pos.y.equals(this.y);
+        }
+        return false;
     }
 }
