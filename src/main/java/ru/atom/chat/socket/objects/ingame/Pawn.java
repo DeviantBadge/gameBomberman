@@ -3,7 +3,8 @@ package ru.atom.chat.socket.objects.ingame;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
 import ru.atom.chat.socket.objects.base.GameObject;
-import ru.atom.chat.socket.objects.base.Position;
+import ru.atom.chat.socket.objects.base.util.Position;
+import ru.atom.chat.socket.enums.ObjectType;
 
 public class Pawn extends GameObject {
     public static enum Direction {
@@ -15,21 +16,14 @@ public class Pawn extends GameObject {
 
     private Direction direction;
 
-    public Pawn(@NotNull Position position, @NotNull Direction direction) {
-        super("Pawn", position);
-        this.direction = direction;
-    }
-
-    public Pawn(@NotNull Integer x, @NotNull Integer y, @NotNull Direction direction) {
-        this(new Position(x, y), direction);
-    }
-
     public Pawn(@NotNull Position position) {
-        this(position, Direction.DOWN);
+        super(ObjectType.Pawn, position);
+        setDirection(Direction.DOWN);
     }
 
     public Pawn(@NotNull Integer x, @NotNull Integer y) {
-        this(new Position(x,y),Direction.DOWN);
+        super(ObjectType.Pawn, new Position(x,y));
+        setDirection(Direction.DOWN);
     }
 
     public Direction getDirection() {
@@ -46,5 +40,9 @@ public class Pawn extends GameObject {
         return super.getEntrails() + ",direction" + direction;
     }
 
-
+    @Override
+    @JsonIgnore
+    public boolean isDestroyable() {
+        return true;
+    }
 }

@@ -1,4 +1,4 @@
-package ru.atom.chat.socket.topics;
+package ru.atom.chat.socket.enums;
 
 public enum MessageType {
     REPLICA,

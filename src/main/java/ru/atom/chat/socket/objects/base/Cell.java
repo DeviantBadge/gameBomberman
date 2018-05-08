@@ -1,15 +1,19 @@
 package ru.atom.chat.socket.objects.base;
 
-import ru.atom.chat.socket.objects.base.interfaces.Destroyable;
-import ru.atom.chat.socket.objects.base.interfaces.Ticking;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.atom.chat.socket.enums.ObjectType;
+import ru.atom.chat.socket.objects.base.util.Position;
+import ru.atom.chat.socket.objects.base.util.SizeParam;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Cell implements Ticking , Destroyable {
+public class Cell {
+    private static final Logger log = LoggerFactory.getLogger(Cell.class);
     private final List<GameObject> objects = new ArrayList<>();
-    private final List<GameObject> changedObjects = new ArrayList<>();
     private Position position;
+
 
     public Cell(Position position) {
         this.position = position;
@@ -18,33 +22,22 @@ public class Cell implements Ticking , Destroyable {
     public void addObject(GameObject object) {
         if (!objects.contains(object)) {
             objects.add(object);
-            changedObjects.add(object);
-        }
-        if (!object.getType().equals("Pawn")) {
-            if (!position.equals(object.getPosition())) {
-                object.setPosition(position);
-                if (!changedObjects.contains(object))
-                    changedObjects.add(object);
-            }
-        }
-    }
+        } else
+            log.warn("You trying to add existing object to cell");
 
-    public void removeObject(GameObject object) {
-        objects.remove(object);
-        if (!object.getType().equals("Pawn")) {
-            if (!changedObjects.contains(object))
-                changedObjects.add(object);
+        if (object.getType() != ObjectType.Pawn) {
+            object.setPosition(position);
+        } else {
+            log.warn("You trying to add pawn to cell");
         }
-    }
-
-    public List<GameObject> getChangedObjects() {
-        List<GameObject> update = new ArrayList<>(changedObjects);
-        changedObjects.clear();
-        return update;
     }
 
     public GameObject get(int i) {
         return objects.get(i);
+    }
+
+    public int size() {
+        return objects.size();
     }
 
     public List<GameObject> getObjects() {
@@ -55,23 +48,13 @@ public class Cell implements Ticking , Destroyable {
         return position;
     }
 
-    @Override
-    public void tick(int ms) {
+    public boolean contains(Position objectPosition) {
+        int centerX = objectPosition.getX() + SizeParam.CELL_SIZE_X / 2;
+        int centerY = objectPosition.getY() + SizeParam.CELL_SIZE_Y / 2;
 
-    }
-
-    @Override
-    public boolean isReady() {
-        return false;
-    }
-
-    @Override
-    public boolean isDestroyable() {
-        return false;
-    }
-
-    @Override
-    public boolean destroy() {
-        return false;
+        return  (centerX < position.getX() + 32) &&
+                (centerX >= position.getX()) &&
+                (centerY < position.getY() + 32) &&
+                (centerY >= position.getY());
     }
 }

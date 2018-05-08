@@ -1,9 +1,10 @@
-package ru.atom.chat.socket.objects.base;
+package ru.atom.chat.socket.objects.base.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.atom.chat.socket.message.request.InGameMovement;
+import ru.atom.chat.socket.message.request.messagedata.InGameMovement;
 
 public class Position {
     private static Logger log = LoggerFactory.getLogger(InGameMovement.class);
@@ -43,5 +44,13 @@ public class Position {
             return pos.x.equals(this.x) && pos.y.equals(this.y);
         }
         return false;
+    }
+
+    @JsonIgnore
+    public Position getCenter() {
+        return new Position(
+                getX() + SizeParam.CELL_SIZE_X / 2,
+                getY() + SizeParam.CELL_SIZE_Y / 2
+        );
     }
 }

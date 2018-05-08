@@ -1,22 +1,22 @@
-package ru.atom.chat.socket.message.response;
+package ru.atom.chat.socket.message.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import ru.atom.chat.socket.enums.MessageType;
+import ru.atom.chat.socket.enums.IncomingTopic;
 
-public class OutgoingMessage {
-    private final MessageType topic;
+public class IncomingMessage {
+    private final IncomingTopic topic;
     private final String data;
 
 
-    public OutgoingMessage(MessageType topic, String data) {
+    public IncomingMessage(IncomingTopic topic, String data) {
         this.topic = topic;
         this.data = data;
     }
 
     @JsonCreator
-    public OutgoingMessage(@JsonProperty("topic") MessageType topic, @JsonProperty("data") JsonNode data) {
+    public IncomingMessage(@JsonProperty("topic") IncomingTopic topic, @JsonProperty("data") JsonNode data) {
         this.topic = topic;
         this.data = data.toString();
     }
@@ -25,7 +25,7 @@ public class OutgoingMessage {
         return data;
     }
 
-    public MessageType getTopic() {
+    public IncomingTopic getTopic() {
         return topic;
     }
 
@@ -34,3 +34,4 @@ public class OutgoingMessage {
         return "{topic:" + topic + ",data:" + data + "}";
     }
 }
+

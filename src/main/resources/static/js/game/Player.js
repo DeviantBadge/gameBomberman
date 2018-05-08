@@ -19,9 +19,9 @@ var Player = function (id, position) {
             idle: [0, 0, 'idle'],
             down: [0, 3, 'down', 0.1],
             left: [4, 7, 'left', 0.1],
-            up: [8, 11, 'up', 0.1],
+            up:   [8, 11, 'up', 0.1],
             right: [12, 15, 'right', 0.1],
-            dead: [16, 16, 'dead', 0.1]
+            dead: [16, 16, 'dead']
         }
     });
 
@@ -44,6 +44,7 @@ Player.prototype.animate = function (animation) {
 
 Player.prototype.update = function () {
     if (!this.alive) {
+        this.animate('dead');
         return;
     }
 

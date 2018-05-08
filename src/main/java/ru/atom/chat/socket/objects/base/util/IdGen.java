@@ -1,20 +1,21 @@
-package ru.atom.chat.socket.objects.base;
+package ru.atom.chat.socket.objects.base.util;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class IdGen {
+public class IdGen {
     private final ConcurrentLinkedQueue<Integer> deletedId = new ConcurrentLinkedQueue<Integer>();
     private AtomicInteger lastId = new AtomicInteger(0);
 
-    Integer generateId() {
+    public Integer generateId() {
         Integer id = deletedId.poll();
         if (id != null)
             return id;
         return lastId.getAndIncrement();
     }
 
-    void addDeletedId(Integer id) {
-        deletedId.add(id);
+    public void addDeletedId(Integer id) {
+        if(!deletedId.contains(id))
+            deletedId.add(id);
     }
 }

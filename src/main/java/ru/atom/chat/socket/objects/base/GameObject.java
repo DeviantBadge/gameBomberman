@@ -1,14 +1,21 @@
 package ru.atom.chat.socket.objects.base;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import ru.atom.chat.socket.objects.base.interfaces.Destroyable;
+import ru.atom.chat.socket.objects.base.interfaces.Replicable;
+import ru.atom.chat.socket.objects.base.util.IdGen;
+import ru.atom.chat.socket.objects.base.util.Position;
+import ru.atom.chat.socket.enums.ObjectType;
 
-public abstract class GameObject {
+public abstract class GameObject implements Destroyable, Replicable {
     private final static IdGen idGen = new IdGen();
     private final Integer id;
-    private final String type;
-    private Position position;
+    private final ObjectType type;
 
-    public GameObject(String type, Position position) {
+    private Position position;
+    private boolean deleted = false;
+
+    public GameObject(ObjectType type, Position position) {
         id = idGen.generateId();
         this.type = type;
         this.position = position;
@@ -18,7 +25,7 @@ public abstract class GameObject {
         return id;
     }
 
-    public String getType() {
+    public ObjectType getType() {
         return type;
     }
 
@@ -38,5 +45,36 @@ public abstract class GameObject {
     @Override
     public String toString() {
         return "{" + getEntrails() + "}";
+    }
+
+    @Override
+    @JsonIgnore
+    public boolean isDestroyable() {
+        return false;
+    }
+
+    protected void delete() {
+        idGen.addDeletedId(getId());
+        deleted = true;
+    }
+
+    @JsonIgnore
+    final public boolean isDeleted() {
+        return deleted;
+    }
+
+    @JsonIgnore
+    @Override
+    public boolean isDestroyed() {
+        return isDeleted();
+    }
+
+    @Override
+    public boolean destroy() {
+        if(isDestroyable()) {
+            delete();
+            return true;
+        }
+        return false;
     }
 }

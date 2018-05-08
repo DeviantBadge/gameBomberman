@@ -31,6 +31,7 @@ ServerProxy.prototype.setupMessaging = function() {
 
 ServerProxy.prototype.connectToGameServer = function(gameId) {
     this.socket = new SockJS(gClusterSettings.gameServerUrl());
+    var sock = this.socket;
     var self = this;
     this.socket.onmessage = function (event) {
         var msg = JSON.parse(event.data);
@@ -40,7 +41,8 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
         self.handler[msg.topic](msg);
     };
 
-    this.socket.onopen = function () { };
+    this.socket.onopen = function () {
+    };
 
     this.socket.onclose = function (event) {
         console.log('Code: ' + event.code + ' cause: ' + event.reason);
