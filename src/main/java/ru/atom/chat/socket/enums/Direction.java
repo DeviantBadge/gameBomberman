@@ -1,8 +1,8 @@
 package ru.atom.chat.socket.enums;
 
-public enum  MovementType {
+public enum  Direction {
     UP,
-    RIGHT,
     DOWN,
-    LEFT
+    LEFT,
+    RIGHT
 }

@@ -32,6 +32,10 @@ public class Cell {
         }
     }
 
+    public void removeObject(GameObject object) {
+        objects.remove(object);
+    }
+
     public GameObject get(int i) {
         return objects.get(i);
     }
@@ -49,8 +53,8 @@ public class Cell {
     }
 
     public boolean contains(Position objectPosition) {
-        int centerX = objectPosition.getX() + SizeParam.CELL_SIZE_X / 2;
-        int centerY = objectPosition.getY() + SizeParam.CELL_SIZE_Y / 2;
+        double centerX = objectPosition.getX() + SizeParam.CELL_SIZE_X / 2;
+        double centerY = objectPosition.getY() + SizeParam.CELL_SIZE_Y / 2;
 
         return  (centerX < position.getX() + 32) &&
                 (centerX >= position.getX()) &&

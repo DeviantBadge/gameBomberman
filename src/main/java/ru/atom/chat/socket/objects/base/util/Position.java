@@ -1,5 +1,7 @@
 package ru.atom.chat.socket.objects.base.util;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -8,10 +10,10 @@ import ru.atom.chat.socket.message.request.messagedata.InGameMovement;
 
 public class Position {
     private static Logger log = LoggerFactory.getLogger(InGameMovement.class);
-    private final Integer x;
-    private final Integer y;
+    private final Double x;
+    private final Double y;
 
-    public Position(@NotNull Integer x, @NotNull Integer y) {
+    public Position(double x, double y) {
         this.x = x;
         this.y = y;
     }
@@ -21,11 +23,23 @@ public class Position {
         this.y = position.y;
     }
 
-    public Integer getX() {
+    @JsonGetter("x")
+    public Integer getIntX() {
+        return x.intValue();
+    }
+
+    @JsonGetter("y")
+    public Integer getIntY() {
+        return y.intValue();
+    }
+
+    @JsonIgnore
+    public Double getX() {
         return x;
     }
 
-    public Integer getY() {
+    @JsonIgnore
+    public Double getY() {
         return y;
     }
 

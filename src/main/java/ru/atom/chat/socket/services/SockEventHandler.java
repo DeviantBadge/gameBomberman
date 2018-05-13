@@ -20,8 +20,11 @@ import java.io.IOException;
 
 @Service
 public class SockEventHandler extends TextWebSocketHandler {
-    static Pawn pawn = new Pawn(32, 32);
-    GameSession gameSession = new GameSession();
+    private static Pawn pawn = new Pawn(32, 32);
+    private static GameSession gameSession = new GameSession();
+    static {
+        new Thread(gameSession).start();
+    }
 
     private static Logger log = LoggerFactory.getLogger(SockEventHandler.class);
 
@@ -33,7 +36,7 @@ public class SockEventHandler extends TextWebSocketHandler {
         super.afterConnectionEstablished(session);
         SessionsList.addSession(session);
         String gameId = "";
-        int inGameNum = gameService.findGameById(gameId).playerReady(session);
+        // int inGameNum = gameService.findGameById(gameId).playerReady(session);
         // session.send(new TextMessage(String.valueOf(inGameNum)));
         log.info("Socket Connected: " + session);
     }
@@ -42,7 +45,6 @@ public class SockEventHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String json = message.getPayload();
         gameSession.addOrder(json,session);
-        gameSession.performOrders();
     }
 
     @Override

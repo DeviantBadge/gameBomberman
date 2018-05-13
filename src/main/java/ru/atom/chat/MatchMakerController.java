@@ -10,8 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import ru.atom.chat.socket.objects.gamesession.GameSession;
 import ru.atom.chat.socket.services.game.GameService;
-import ru.atom.chat.socket.services.game.GameSession;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -32,10 +32,10 @@ public class MatchMakerController {
     public ResponseEntity<String> join(@RequestParam("name") String name) {
         GameSession session;
         if ((session = sessions.poll()) == null) {
-            session = gameService.createGame(name);
+            session = gameService.createGame();
             sessions.add(session);
         }
-        session.addPlayer(name);
+        // session.addPlayer(name);
 
         log.warn(session.getId().toString());
         return new ResponseEntity<>(session.getId().toString(), HttpStatus.OK);

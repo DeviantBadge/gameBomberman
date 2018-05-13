@@ -1,6 +1,8 @@
 package ru.atom.chat.socket.objects.base;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.atom.chat.socket.objects.base.interfaces.Destroyable;
 import ru.atom.chat.socket.objects.base.interfaces.Replicable;
 import ru.atom.chat.socket.objects.base.util.IdGen;
@@ -8,6 +10,7 @@ import ru.atom.chat.socket.objects.base.util.Position;
 import ru.atom.chat.socket.enums.ObjectType;
 
 public abstract class GameObject implements Destroyable, Replicable {
+    protected final static Logger log = LoggerFactory.getLogger(GameObject.class);
     private final static IdGen idGen = new IdGen();
     private final Integer id;
     private final ObjectType type;
