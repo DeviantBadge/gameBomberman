@@ -13,12 +13,13 @@ var a = 0;
 MessageBroker.prototype.handleReplica = function (msg) {
     var gameObjects = JSON.parse(msg.data);
     a ++;
-    console.log(a);
-    console.log(msg);
+    // console.log(a);
+    // console.log(msg);
     gGameEngine.game.gc(gameObjects);
 };
 
 MessageBroker.prototype.handleGameOver = function (msg) {
+    console.log(msg);
     gGameEngine.finishGame(msg.data);
 };
 
@@ -36,6 +37,7 @@ MessageBroker.prototype.handlePawn = function(obj) {
         player.bmp.x = position.x;
         player.bmp.y = position.y;
         player.direction = direction;
+        player.alive = obj.alive;
     } else {
         player = new Player(obj.id, position);
         gGameEngine.game.players.push(player);
@@ -74,6 +76,7 @@ MessageBroker.prototype.handleTile = function (obj) {
     var tile = gGameEngine.game.tiles.find(function (el) {
         return el.id === obj.id;
     });
+    // console.log(tile);
     var position = gMessageBroker.mirrorPosition(obj.position);
     if (tile) {
         tile.material = obj.type;
@@ -103,6 +106,7 @@ MessageBroker.prototype.mirrorPosition = function (origin) {
 MessageBroker.prototype.move = function (direction) {
     var template = {
         topic: "MOVE",
+        gameId: gGameEngine.gameId,
         data: {
             direction: direction.toUpperCase()
         }
@@ -114,6 +118,7 @@ MessageBroker.prototype.move = function (direction) {
 MessageBroker.prototype.plantBomb = function () {
     var template = {
         topic: "PLANT_BOMB",
+        gameId: gGameEngine.gameId,
         data: {}
     };
 
@@ -124,7 +129,10 @@ MessageBroker.prototype.plantBomb = function () {
 MessageBroker.prototype.jump = function () {
     var template = {
         topic: "CONNECT",
-        data: {}
+        gameId: gGameEngine.gameId,
+        data: {
+            name: gGameEngine.playerName
+        }
     };
     return JSON.stringify(template);
     /*
@@ -132,8 +140,7 @@ MessageBroker.prototype.jump = function () {
         topic: "JUMP",
         data: {}
     };
-
-    return JSON.stringify(template);*/
+    */
 };
 
 gMessageBroker = new MessageBroker();

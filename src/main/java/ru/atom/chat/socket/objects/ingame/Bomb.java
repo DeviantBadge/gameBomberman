@@ -6,10 +6,11 @@ import ru.atom.chat.socket.objects.base.GameObject;
 import ru.atom.chat.socket.objects.base.interfaces.Ticking;
 import ru.atom.chat.socket.objects.base.util.Position;
 import ru.atom.chat.socket.enums.ObjectType;
+import ru.atom.chat.socket.objects.gamesession.GameSession;
 
 public class Bomb extends GameObject implements Ticking {
 
-    private static long LOOP_TIME = 10_000; // 10 seconds
+    private static long LOOP_TIME = 5_000; // 5 seconds
     private long timeLeft = LOOP_TIME;
     private Pawn owner;
 

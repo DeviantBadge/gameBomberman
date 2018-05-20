@@ -6,6 +6,9 @@ var GameEngine = function () {
         tile: {},
         bonus: {}
     };
+
+    this.playerName = "";
+    this.gameId = "";
 };
 
 GameEngine.prototype.load = function () {

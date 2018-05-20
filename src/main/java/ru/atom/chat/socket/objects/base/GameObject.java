@@ -11,7 +11,8 @@ import ru.atom.chat.socket.enums.ObjectType;
 
 public abstract class GameObject implements Destroyable, Replicable {
     protected final static Logger log = LoggerFactory.getLogger(GameObject.class);
-    private final static IdGen idGen = new IdGen();
+    // TODO mb its better to give object id from game session
+    private final static IdGen idGen = new IdGen(false);
     private final Integer id;
     private final ObjectType type;
 
@@ -74,7 +75,7 @@ public abstract class GameObject implements Destroyable, Replicable {
 
     @Override
     public boolean destroy() {
-        if(isDestroyable()) {
+        if(isDestroyable() && !isDestroyed()) {
             delete();
             return true;
         }

@@ -25,14 +25,16 @@ public class Cell {
         } else
             log.warn("You trying to add existing object to cell");
 
-        if (object.getType() != ObjectType.Pawn) {
+        if (object.getType() != ObjectType.Pawn)
             object.setPosition(position);
-        } else {
-            log.warn("You trying to add pawn to cell");
-        }
+
     }
 
     public void removeObject(GameObject object) {
+        objects.remove(object);
+    }
+
+    public void removeObject(int object) {
         objects.remove(object);
     }
 
@@ -53,12 +55,19 @@ public class Cell {
     }
 
     public boolean contains(Position objectPosition) {
-        double centerX = objectPosition.getX() + SizeParam.CELL_SIZE_X / 2;
-        double centerY = objectPosition.getY() + SizeParam.CELL_SIZE_Y / 2;
+        Position center = objectPosition.getCenter();
 
-        return  (centerX < position.getX() + 32) &&
-                (centerX >= position.getX()) &&
-                (centerY < position.getY() + 32) &&
-                (centerY >= position.getY());
+        return  (center.getX() < position.getX() + 32) &&
+                (center.getX() >= position.getX()) &&
+                (center.getY() < position.getY() + 32) &&
+                (center.getY() >= position.getY());
+    }
+
+    public void deleteDestroyed() {
+        objects.removeIf(GameObject::isDestroyed);
+    }
+
+    public boolean isEmpty() {
+        return objects.isEmpty();
     }
 }

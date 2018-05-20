@@ -1,5 +1,6 @@
 package ru.atom.chat.socket.objects.gamesession;
 
+import ru.atom.chat.socket.objects.ObjectCreator;
 import ru.atom.chat.socket.objects.base.Cell;
 import ru.atom.chat.socket.objects.base.GameObject;
 import ru.atom.chat.socket.objects.base.interfaces.Replicable;
@@ -18,32 +19,72 @@ public class GameState {
     private static final int Y_CELL_SIZE = 32;
     private final List<List<Cell>> cells;
     private final List<Bomb> bombs;
-
-    // TODO mb add pawns to here ? it could be faster and more comfortable
     private final List<Pawn> pawns;
 
+    private ObjectCreator creator;
     private final int sizeX;
     private final int sizeY;
-    private boolean prepared;
+
+    private List<Position> playerPositions;
+    private int playerAmount;
+    private boolean warmUp;
 
 
-    public GameState() {
-        this(27, 17);
+    public GameState(ObjectCreator creator, int playerAmount) {
+        this(creator, 27, 17, playerAmount);
     }
 
-    public GameState(int sizeX, int sizeY) {
+    private GameState(ObjectCreator creator, int sizeX, int sizeY, int playerAmount) {
+        this.creator = creator;
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         cells = new ArrayList<>();
         bombs = new ArrayList<>();
         pawns = new ArrayList<>();
-        prepared = false;
+
+        playerPositions = new ArrayList<>(playerAmount);
+        this.playerAmount = playerAmount;
+
+        createWarmUpField();
+    }
+
+    private void createWarmUpField() {
+        Cell cell;
+        GameObject object;
+        cells.clear();
+
+        for (int i = 0; i < sizeX; i++) {
+            cells.add(new ArrayList<>());
+            for (int j = 0; j < sizeY; j++) {
+                cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
+
+                cells.get(i).add(cell);
+                if ((i > 0) && (j > 0) && (i < (sizeX - 1)) && (j < (sizeY - 1))) {
+                    object = new Wood(cell.getPosition());
+                    cell.addObject(object);
+                }
+            }
+        }
+        generatePlayerPositions();
+        warmUp = true;
+    }
+
+    public List<? extends Replicable> recreate() {
+        List<Pawn> pawns = new ArrayList<>(getPawns());
+        getPawns().clear();
+        List<? extends Replicable> replicables = createGameField();
+        for(Pawn pawn : pawns)
+            addPlayer(pawn);
+        return replicables;
     }
 
     public List<? extends Replicable> createGameField(/*for example field pattern*/) {
         Cell cell;
         GameObject object;
         List<GameObject> replicables = new ArrayList<>();
+        cells.clear();
+        bombs.clear();
+
         for (int i = 0; i < sizeX; i++) {
             cells.add(new ArrayList<>());
             for (int j = 0; j < sizeY; j++) {
@@ -58,7 +99,7 @@ public class GameState {
                     }
                 }
                 if ((i > 1) && (i < (sizeX - 2)) || (j > 1) && (j < (sizeY - 2))) {
-                    if (((i % 2) ^ (j % 2)) == 1){
+                    if (((i % 2) ^ (j % 2)) == 1) {
                         object = new Wood(cell.getPosition());
                         replicables.add(object);
                         cell.addObject(object);
@@ -66,66 +107,74 @@ public class GameState {
                 }
             }
         }
-        prepared = true;
+        generatePlayerPositions();
+        warmUp = false;
         return replicables;
+    }
+
+    private void generatePlayerPositions() {
+        playerPositions.clear();
+        for (int i = 0; i < playerAmount; i++) {
+            switch (i) {
+                case 0:
+                    playerPositions.add(get(0, 0).getPosition());
+                    break;
+                case 1:
+                    playerPositions.add(get(sizeX - 1, sizeY - 1).getPosition());
+                    break;
+                case 2:
+                    playerPositions.add(get(0, sizeY - 1).getPosition());
+                    break;
+                case 3:
+                    playerPositions.add(get(sizeX - 1, 0).getPosition());
+                    break;
+            }
+        }
     }
 
     public Cell get(int x, int y) {
         return cells.get(x).get(y);
     }
 
-    public void put(int x, int y, GameObject gameObject) {
-        get(x, y).addObject(gameObject);
-    }
-
-    public void put(Position position, GameObject gameObject) {
-        get(position).addObject(gameObject);
-    }
-
-    public Cell getCell(GameObject gameObject) {
-        Position center = gameObject.getPosition().getCenter();
-        return get(center.getIntX() / 32, center.getIntY() / 32);
-    }
-
     public List<Bomb> getBombs() {
         return bombs;
     }
 
-    public boolean isReady() {
-        return prepared;
-    }
-
-    public void addPlayer(Position position, Pawn player) {
+    public void addPlayer(Pawn player) {
         pawns.add(player);
-        get(player.getPosition()).addObject(player);
+        Position playerPos = getRandomPos();
+        player.setPosition(playerPos);
+        get(playerPos).addObject(player);
     }
 
-    public void addBomb(Position position, Bomb bomb) {
+    private Position getRandomPos() {
+        int num = ((int) (playerPositions.size() * Math.random()));
+        Position position = playerPositions.get(num);
+        playerPositions.remove(num);
+        return position;
+
+    }
+
+    public void addBomb(Bomb bomb) {
         bombs.add(bomb);
+        get(bomb.getPosition()).addObject(bomb);
     }
 
     public List<Pawn> getPawns() {
         return pawns;
     }
 
-    public Position checkBorders(Position newPosition) {
+    public Position checkFieldBorders(Position newPosition) {
         double x = newPosition.getX(), y = newPosition.getY();
-        if(newPosition.getX() < 0)
+        if (newPosition.getX() < 0)
             x = 0;
-        if(newPosition.getY() < 0)
+        if (newPosition.getY() < 0)
             y = 0;
-        if(newPosition.getX() + SizeParam.CELL_SIZE_X > sizeX * X_CELL_SIZE)
+        if (newPosition.getX() + SizeParam.CELL_SIZE_X > sizeX * X_CELL_SIZE)
             x = sizeX * X_CELL_SIZE - SizeParam.CELL_SIZE_X;
-        if(newPosition.getY() + SizeParam.CELL_SIZE_Y > sizeY * Y_CELL_SIZE)
+        if (newPosition.getY() + SizeParam.CELL_SIZE_Y > sizeY * Y_CELL_SIZE)
             y = sizeY * Y_CELL_SIZE - SizeParam.CELL_SIZE_Y;
         return new Position(x, y);
-    }
-
-    public Position checkCellIsEmpty(Position position) {
-        Cell cell = get(position.getCenter());
-        if(cell.getObjects().isEmpty())
-            return position;
-        return position;
     }
 
     public Cell get(Position position) {
@@ -138,5 +187,40 @@ public class GameState {
 
     public int getSizeY() {
         return sizeY;
+    }
+
+    public boolean isWarmUp() {
+        return warmUp;
+    }
+
+    public List<Replicable> getFieldReplica() {
+        List<Replicable> replicables = new ArrayList<>();
+        cells.forEach(
+                column -> column.forEach(
+                        cell -> replicables.addAll(cell.getObjects())
+                )
+        );
+        return replicables;
+    }
+
+    public int playerNum(Pawn pawn) {
+        return pawns.indexOf(pawn);
+    }
+
+    public int getAliveNum() {
+        for(int i = 0; i < pawns.size(); i ++) {
+            if(pawns.get(i).isAlive())
+                return i;
+        }
+        return -1;
+    }
+
+    public int deadPawnsAmount() {
+        int amount = 0;
+        for(int i = 0; i < pawns.size(); i ++) {
+            if(pawns.get(i).isAlive())
+                amount++;
+        }
+        return amount;
     }
 }

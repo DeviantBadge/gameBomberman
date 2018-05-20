@@ -13,6 +13,7 @@ var Game = function (stage) {
 Game.prototype.start = function () {
     gInputEngine.setupBindings();
     var gameId = gMatchMaker.getSessionId();
+    gGameEngine.gameId = gameId;
     this.serverProxy.connectToGameServer(gameId);
     this.drawBackground();
 
@@ -66,6 +67,7 @@ Game.prototype.gc = function (gameObjects) {
     for (var i = 0; i < gameObjects.length; i++) {
         var wasDeleted = false;
         var obj = gameObjects[i];
+        // console.log(obj);
 
         if (obj.type === 'Pawn' || obj.type === 'Bomb') {
             gMessageBroker.handler[obj.type](obj);

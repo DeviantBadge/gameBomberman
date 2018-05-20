@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.atom.chat.socket.objects.base.interfaces.Replicable;
+import ru.atom.chat.socket.util.JsonHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,5 +29,10 @@ public class Replica {
         ArrayList<Replicable> oldReplica = data;
         data = new ArrayList<>();
         return oldReplica;
+    }
+
+    @Override
+    public String toString() {
+        return JsonHelper.toJson(data);
     }
 }

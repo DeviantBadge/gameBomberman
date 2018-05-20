@@ -11,31 +11,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.atom.chat.socket.objects.gamesession.GameSession;
-import ru.atom.chat.socket.services.game.GameService;
-
-import java.util.concurrent.ConcurrentLinkedQueue;
+import ru.atom.chat.socket.services.repos.GameSessionRepo;
 
 @Controller
 @RequestMapping("matchmaker")
 public class MatchMakerController {
     private static final Logger log = LoggerFactory.getLogger(MatchMakerController.class);
 
-    @Autowired
-    private GameService gameService;
-
-    private final ConcurrentLinkedQueue<GameSession> sessions = new ConcurrentLinkedQueue<>();
+    private GameSessionRepo gameSessionRepo = GameSessionRepo.getInstance();
 
     @RequestMapping(
             path = "join",
             method = RequestMethod.POST,
             produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> join(@RequestParam("name") String name) {
-        GameSession session;
-        if ((session = sessions.poll()) == null) {
-            session = gameService.createGame();
-            sessions.add(session);
-        }
-        // session.addPlayer(name);
+        System.out.println(gameSessionRepo);
+        GameSession session = gameSessionRepo.pollFreeSession();
+        session.addPlayer(name);
+        gameSessionRepo.putSessionBack(session);
 
         log.warn(session.getId().toString());
         return new ResponseEntity<>(session.getId().toString(), HttpStatus.OK);

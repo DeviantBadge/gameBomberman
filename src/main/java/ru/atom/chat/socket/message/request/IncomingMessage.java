@@ -7,17 +7,15 @@ import ru.atom.chat.socket.enums.IncomingTopic;
 
 public class IncomingMessage {
     private final IncomingTopic topic;
+    private final String gameId;
     private final String data;
 
-
-    public IncomingMessage(IncomingTopic topic, String data) {
-        this.topic = topic;
-        this.data = data;
-    }
-
     @JsonCreator
-    public IncomingMessage(@JsonProperty("topic") IncomingTopic topic, @JsonProperty("data") JsonNode data) {
+    public IncomingMessage(@JsonProperty("topic") IncomingTopic topic,
+                           @JsonProperty("gameId") String gameId,
+                           @JsonProperty("data") JsonNode data) {
         this.topic = topic;
+        this.gameId = gameId;
         this.data = data.toString();
     }
 
@@ -27,6 +25,10 @@ public class IncomingMessage {
 
     public IncomingTopic getTopic() {
         return topic;
+    }
+
+    public String getGameId() {
+        return gameId;
     }
 
     @Override

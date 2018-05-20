@@ -1,5 +1,7 @@
 package ru.atom.chat.socket.objects.gamesession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import ru.atom.chat.socket.enums.MessageType;
@@ -9,35 +11,42 @@ import ru.atom.chat.socket.objects.ingame.Pawn;
 import ru.atom.chat.socket.util.JsonHelper;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PlayersList {
+    private static final Logger log = LoggerFactory.getLogger(PlayersList.class);
 
-    public static class PlayerPawn {
-        private final Pawn pawn;
-        private final WebSocketSession session;
+    public static class OnlinePlayer {
+        private final String name;
+        private WebSocketSession session;
 
-        PlayerPawn(Pawn pawn, WebSocketSession session) {
-            this.pawn = pawn;
+        OnlinePlayer(String name, WebSocketSession session) {
             this.session = session;
+            this.name = name;
         }
 
-        public boolean contain(WebSocketSession session) {
-            return this.session.equals(session);
+        OnlinePlayer(String name) {
+            this(name, null);
         }
 
-        public Pawn getPawn() {
-            return pawn;
+        public void setSession(WebSocketSession session) {
+            if (this.session != null)
+                log.warn("Smbdy want to connect to existing player");
+            else
+                this.session = session;
         }
 
         public WebSocketSession getSession() {
             return session;
         }
+
+        public String getName() {
+            return name;
+        }
     }
 
-    private List<PlayerPawn> players;
+    private List<OnlinePlayer> players;
     private int maxAmount;
 
     public PlayersList(int maxPlayerAmount) {
@@ -48,7 +57,7 @@ public class PlayersList {
     int playerNum(WebSocketSession session) {
         int playerNum = -1;
         for (int i = 0; i < players.size(); i++) {
-            if (players.get(i).contain(session)) {
+            if (players.get(i).getSession() == session) {
                 playerNum = i;
                 break;
             }
@@ -56,37 +65,55 @@ public class PlayersList {
         return playerNum;
     }
 
-    public PlayerPawn createNewPlayer(WebSocketSession player) {
-        PlayerPawn playerPawn = null;
-        if (players.size() < maxAmount) {
-            playerPawn = new PlayerPawn(new Pawn(0, 0), player);
-            players.add(playerPawn);
+    public int playerNum(String name) {
+        int playerNum = -1;
+        for (int i = 0; i < players.size(); i++) {
+            if (players.get(i).getName().equals(name)) {
+                playerNum = i;
+                break;
+            }
         }
-        return playerPawn;
+        return playerNum;
     }
 
-    public Pawn getPlayerPawn(int playerNum) {
-        return players.get(playerNum).getPawn();
+    public String getName(int num) {
+        return players.get(num).getName();
     }
 
-    public List<? extends Replicable> getPawns() {
-        List<Replicable> pawns = new ArrayList<>();
-        players.forEach(playerPawn -> pawns.add(playerPawn.getPawn()));
-        return pawns;
+    public OnlinePlayer createNewPlayer(String name) {
+        OnlinePlayer onlinePlayer = null;
+        if (players.size() < maxAmount) {
+            onlinePlayer = new OnlinePlayer(name);
+            players.add(onlinePlayer);
+        }
+        return onlinePlayer;
     }
 
-    public WebSocketSession getPlayerSocket(int playerNum) {
-        return players.get(playerNum).getSession();
+    public void connectPlayerWithSocket(int playerNum, WebSocketSession session) {
+        players.get(playerNum).setSession(session);
     }
 
-    public void sendAll(ArrayList<Replicable> data) {
-        OutgoingMessage message1 = new OutgoingMessage(MessageType.REPLICA, JsonHelper.toJson(data));
-        players.forEach(playerPawn -> {
+    public void sendAll(String data) {
+        players.forEach(onlinePlayer -> {
             try {
-                playerPawn.getSession().sendMessage(new TextMessage(JsonHelper.toJson(message1)));
+                if (onlinePlayer.getSession() != null)
+                    onlinePlayer.getSession().sendMessage(new TextMessage(JsonHelper.toJson(data)));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
+    }
+
+    public void sendTo(int playerNum, String data) {
+        try {
+            if (players.get(playerNum).getSession() != null)
+                players.get(playerNum).getSession().sendMessage(new TextMessage(JsonHelper.toJson(data)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int size() {
+        return players.size();
     }
 }

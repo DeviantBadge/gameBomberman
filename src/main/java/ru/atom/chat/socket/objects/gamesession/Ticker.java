@@ -13,6 +13,7 @@ public abstract class Ticker implements Runnable {
 
     private long pastLoopStarted;
     private long tickNumber = 0;
+    private boolean stopped = false;
 
     public Ticker() {
         pastLoopStarted = System.currentTimeMillis();
@@ -20,7 +21,7 @@ public abstract class Ticker implements Runnable {
 
     @Override
     final public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!Thread.currentThread().isInterrupted() && !isStopped()) {
             long started = System.currentTimeMillis();
             long delta = started - pastLoopStarted;
             // System.out.println(delta);
@@ -36,6 +37,17 @@ public abstract class Ticker implements Runnable {
             // log.info("{}: tick ", tickNumber);
             tickNumber++;
         }
+        onStop();
+    }
+
+    protected abstract void onStop();
+
+    public boolean isStopped() {
+        return stopped;
+    }
+
+    protected void stop() {
+        stopped = true;
     }
 
     protected abstract void act(long timeFromPastLoop);
