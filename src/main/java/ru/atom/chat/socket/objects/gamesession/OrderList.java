@@ -16,10 +16,7 @@ public class OrderList {
     }
 
     public void add(Order order) {
-        System.out.println(orders.size() + " before");
-        if(!orders.add(order))
-            System.out.println("CHO ZA HUYNYA");
-        System.out.println(orders.size() + " after");
+        orders.add(order);
     }
 
     public int size() {

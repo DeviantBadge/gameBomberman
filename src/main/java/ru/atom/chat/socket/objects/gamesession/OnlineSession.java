@@ -1,10 +1,12 @@
 package ru.atom.chat.socket.objects.gamesession;
 
-import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import ru.atom.chat.socket.enums.MessageType;
-import ru.atom.chat.socket.message.response.OutgoingMessage;
+import ru.atom.chat.socket.enums.Direction;
+import ru.atom.chat.socket.enums.IncomingTopic;
+import ru.atom.chat.socket.message.request.IncomingMessage;
+import ru.atom.chat.socket.message.request.messagedata.Name;
 import ru.atom.chat.socket.objects.base.util.IdGen;
+import ru.atom.chat.socket.objects.ingame.Pawn;
 import ru.atom.chat.socket.objects.orders.Order;
 import ru.atom.chat.socket.util.JsonHelper;
 
@@ -15,24 +17,49 @@ public abstract class OnlineSession extends Ticker {
     private final Integer id;
 
     // just now if we want new features we have to add it manually
-    // TODO refactor playersList
     private PlayersList playersList;
     private OrderList orderList;
+    private int max;
 
     public OnlineSession(int maxPlayerAmount){
         id = idGen.generateId();
 
         playersList = new PlayersList(maxPlayerAmount);
         orderList = new OrderList();
+        max = maxPlayerAmount;
     }
 
-    public Integer getId() {
-        return id;
+    // **********************
+    // SESSION functions
+    // **********************
+
+    public void addOrder(IncomingMessage message, WebSocketSession session) {
+        Order order = buildOrder(message, session);
+        if(order != null)
+            putOrder(order);
     }
 
-    private void clearId() {
-        idGen.addDeletedId(getId());
+    @Override
+    protected void act(long ms) {
+        performOrders();
+        performTick(ms);
     }
+
+    private void performOrders() {
+        int size = ordersAmount();
+        for (int i = 0; i < size; i++) {
+            Order order = pollOrder();
+            if (order == null)
+                return;
+            carryOut(order);
+        }
+    }
+
+    protected abstract void carryOut(Order order);
+
+    protected abstract void performTick(long ms);
+
+    protected abstract Order buildOrder(IncomingMessage message, WebSocketSession session);
 
     // **********************
     // players list functions
@@ -72,6 +99,15 @@ public abstract class OnlineSession extends Ticker {
         return playersList.size();
     }
 
+    public void addPlayer(String name) {
+        // TODO adding player here, then checking it while player connecting to room
+        createNewPlayer(name);
+    }
+
+    public boolean isFull() {
+        return playersAmount() == max;
+    }
+
 
     // **********************
     // orders list functions
@@ -94,8 +130,11 @@ public abstract class OnlineSession extends Ticker {
         clearId();
     }
 
-    @Override
-    protected void act(long timeFromPastLoop) {
+    public Integer getId() {
+        return id;
+    }
 
+    private void clearId() {
+        idGen.addDeletedId(getId());
     }
 }

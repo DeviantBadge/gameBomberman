@@ -28,14 +28,11 @@ public class SockEventHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
         SessionsList.addSession(session);
-        // int inGameNum = gameService.findGameById(gameId).playerReady(session);
-        // session.send(new TextMessage(String.valueOf(inGameNum)));
         log.info("Socket Connected: " + session);
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        // log.error(message.getPayload());
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         IncomingMessage mes = JsonHelper.fromJson(message.getPayload(), IncomingMessage.class);
         GameSession gameSession = sessions.getSession(mes.getGameId());
         if (gameSession != null)

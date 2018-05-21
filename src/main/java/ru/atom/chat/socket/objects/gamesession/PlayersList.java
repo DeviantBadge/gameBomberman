@@ -97,7 +97,7 @@ public class PlayersList {
         players.forEach(onlinePlayer -> {
             try {
                 if (onlinePlayer.getSession() != null)
-                    onlinePlayer.getSession().sendMessage(new TextMessage(JsonHelper.toJson(data)));
+                    onlinePlayer.getSession().sendMessage(new TextMessage(data));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -107,7 +107,7 @@ public class PlayersList {
     public void sendTo(int playerNum, String data) {
         try {
             if (players.get(playerNum).getSession() != null)
-                players.get(playerNum).getSession().sendMessage(new TextMessage(JsonHelper.toJson(data)));
+                players.get(playerNum).getSession().sendMessage(new TextMessage(data));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -14,6 +14,7 @@ import ru.atom.chat.socket.objects.base.Cell;
 import ru.atom.chat.socket.objects.base.GameObject;
 import ru.atom.chat.socket.objects.base.util.Mover;
 import ru.atom.chat.socket.objects.base.util.Position;
+import ru.atom.chat.socket.objects.gamesession.state.GameState;
 import ru.atom.chat.socket.objects.ingame.Bomb;
 import ru.atom.chat.socket.objects.ingame.Bonus;
 import ru.atom.chat.socket.objects.ingame.Fire;
@@ -61,90 +62,80 @@ public class GameSession extends OnlineSession{
         changedCells = new ArrayList<>();
     }
 
-    public void addOrder(IncomingMessage message, WebSocketSession session) {
+    protected Order buildOrder(IncomingMessage message, WebSocketSession session) {
         if (message.getTopic() == IncomingTopic.CONNECT) {
             String name = JsonHelper.fromJson(message.getData(), Name.class).getName();
             int playerNum = playerNum(name);
             if(playerNum == -1) {
                 log.warn("Connecting to lobby where we does not logged in");
-                return;
+                return null;
             }
-            Order order = new Order(playerNum, name, session);
-            putOrder(order);
-            return;
+            return new Order(playerNum, name, session);
         }
         int playerNum = playerNum(session);
         if (playerNum < 0) {
             log.warn("Player isn`t in this group. Group id - " + getId());
-            return;
+            return null;
         }
-        putOrder(new Order(playerNum, message));
+        return new Order(playerNum, message);
     }
 
     @Override
     protected void act(long ms) {
-        performOrders();
-        performTick(ms);
+        super.act(ms);
         addAliveObjectsToReplica();
         sendReplica();
     }
 
-    private void performOrders() {
-        int size = ordersAmount();
-        for (int i = 0; i < size; i++) {
-            if(ordersAmount() != 0)
-                System.out.println("WTF");
-            Order order = pollOrder();
-            if (order == null)
-                return;
-            switch (order.getIncomingTopic()) {
-                case CONNECT:
+    @Override
+    protected void carryOut(Order order) {
+        switch (order.getIncomingTopic()) {
+            case CONNECT:
 
-                    // TODO we can create game state when we create game, but then only get its replica
-                    // TODO Or when every body connected (we wait for it) we add it to replica
-                    // TODO bla bla, i dont know how to do it now
-                    if(playersAmount() < properties.getMaxPlayerAmount()) {
-                        replica.addAllToReplica(gameState.getFieldReplica());
-                    } else {
-                        sendReplica();
-                        replica.addAllToReplica(gameState.recreate());
-                    }
+                // TODO we can create game state when we create game, but then only get its replica
+                // TODO Or when every body connected (we wait for it) we add it to replica
+                // TODO bla bla, i dont know how to do it now
+                if(playersAmount() < properties.getMaxPlayerAmount()) {
+                    replica.addAllToReplica(gameState.getFieldReplica());
+                } else {
+                    sendReplica();
+                    replica.addAllToReplica(gameState.recreate());
+                }
 
-                    connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
+                connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
 
 
                     /* TODO Game state must generate starting player position, then we give it to players
                        TODO Smth like positions array and we add player only by add(playerPawn); */
-                    gameState.addPlayer(new Pawn(0,0));
-                    break;
+                gameState.addPlayer(new Pawn(0,0));
+                break;
 
-                case JUMP:
-                    break;
+            case JUMP:
+                break;
 
-                case MOVE:
-                    Pawn curPlayer = gameState.getPawns().get(order.getPlayerNum());
-                    if (curPlayer.isMoving())
+            case MOVE:
+                Pawn curPlayer = gameState.getPawns().get(order.getPlayerNum());
+                if (curPlayer.isMoving())
+                    break;
+                switch (order.getMovementType()) {
+                    case UP:
+                        curPlayer.setDirection(Direction.UP);
                         break;
-                    switch (order.getMovementType()) {
-                        case UP:
-                            curPlayer.setDirection(Direction.UP);
-                            break;
-                        case RIGHT:
-                            curPlayer.setDirection(Direction.RIGHT);
-                            break;
-                        case DOWN:
-                            curPlayer.setDirection(Direction.DOWN);
-                            break;
-                        case LEFT:
-                            curPlayer.setDirection(Direction.LEFT);
-                            break;
-                    }
-                    curPlayer.setMoving(true);
-                    break;
-                case PLANT_BOMB:
-                    plantBombBy(gameState.getPawns().get(order.getPlayerNum()));
-                    break;
-            }
+                    case RIGHT:
+                        curPlayer.setDirection(Direction.RIGHT);
+                        break;
+                    case DOWN:
+                        curPlayer.setDirection(Direction.DOWN);
+                        break;
+                    case LEFT:
+                        curPlayer.setDirection(Direction.LEFT);
+                        break;
+                }
+                curPlayer.setMoving(true);
+                break;
+            case PLANT_BOMB:
+                plantBombBy(gameState.getPawns().get(order.getPlayerNum()));
+                break;
         }
     }
 
@@ -167,7 +158,7 @@ public class GameSession extends OnlineSession{
         }
     }
 
-    private void performTick(long ms) {
+    protected void performTick(long ms) {
         movePlayers(ms);
         tickBomb(ms);
         clearCells();
@@ -405,19 +396,10 @@ public class GameSession extends OnlineSession{
         replica.addToReplica(object);
     }
 
-    public void addPlayer(String name) {
-        // TODO adding player here, then checking it while player connecting to room
-        createNewPlayer(name);
-    }
-
-    public boolean isFull() {
-        return playersAmount() == properties.getMaxPlayerAmount();
-    }
-
     @Override
     protected void onStop() {
         super.onStop();
-        String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU DIED"));
+        String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU WON"));
         sendTo(gameState.getAliveNum(), message);
         sessionRepo.endGame(this);
     }

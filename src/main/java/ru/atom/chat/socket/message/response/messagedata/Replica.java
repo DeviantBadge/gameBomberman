@@ -33,6 +33,6 @@ public class Replica {
 
     @Override
     public String toString() {
-        return JsonHelper.toJson(data);
+        return JsonHelper.toJson(getData());
     }
 }

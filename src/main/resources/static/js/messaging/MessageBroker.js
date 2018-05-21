@@ -13,8 +13,8 @@ var a = 0;
 MessageBroker.prototype.handleReplica = function (msg) {
     var gameObjects = JSON.parse(msg.data);
     a ++;
-    // console.log(a);
-    // console.log(msg);
+    console.log(a);
+    console.log(msg);
     gGameEngine.game.gc(gameObjects);
 };
 

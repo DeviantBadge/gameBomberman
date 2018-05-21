@@ -11,8 +11,9 @@ import ru.atom.chat.socket.objects.gamesession.GameSession;
 public class Bomb extends GameObject implements Ticking {
 
     private static long LOOP_TIME = 5_000; // 5 seconds
-    private long timeLeft = LOOP_TIME;
     private Pawn owner;
+    @JsonIgnore
+    private long timeLeft = LOOP_TIME;
 
     public Bomb(@NotNull Position position, @NotNull Pawn owner) {
         super(ObjectType.Bomb, position);
