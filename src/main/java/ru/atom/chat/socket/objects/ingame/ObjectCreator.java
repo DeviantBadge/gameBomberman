@@ -18,10 +18,10 @@ public class ObjectCreator {
         return new Bomb(idGen.generateId(), position, owner, properties.getBombBlowTimeMs());
     }
 
-    public Bonus createBonus(Position position) {
+    public Bonus createBonus(Position position, boolean considerProbability) {
         double bonusCast = Math.random();
         double bonusTypeCast = Math.random();
-        if (bonusCast < properties.getBonusProbability()) {
+        if (!considerProbability || bonusCast < properties.getBonusProbability()) {
             if (bonusTypeCast < properties.getSpeedProbability())
                 return new Bonus(idGen.generateId(), position, Bonus.BonusType.SPEED);
             else

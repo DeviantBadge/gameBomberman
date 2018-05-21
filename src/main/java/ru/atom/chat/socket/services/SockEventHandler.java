@@ -10,7 +10,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import ru.atom.chat.socket.message.request.IncomingMessage;
 import ru.atom.chat.socket.objects.gamesession.GameSession;
 import ru.atom.chat.socket.objects.gamesession.OnlineSession;
-import ru.atom.chat.socket.objects.ingame.*;
 import ru.atom.chat.socket.services.repos.GameSessionRepo;
 import ru.atom.chat.socket.util.JsonHelper;
 import ru.atom.chat.socket.util.SessionsList;
@@ -41,7 +40,7 @@ public class SockEventHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-        System.out.println("Socket Closed: [" + closeStatus.getCode() + "] " + closeStatus.getReason());
+        System.out.println("Socket Closed: [" + closeStatus.getCode() + "] " + closeStatus.getReason() + "; socket id [" + session.getId() + "]");
         OnlineSession onlineSession = SessionsList.getOnlineSession(session);
         if(onlineSession != null)
             onlineSession.onPlayerDisconnect(session);

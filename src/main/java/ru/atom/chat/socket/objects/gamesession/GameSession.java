@@ -56,7 +56,7 @@ public class GameSession extends OnlineSession {
         super(properties.getMaxPlayerAmount());
         this.properties = properties;
         creator = new ObjectCreator(properties);
-        gameState = new GameState(creator, properties.getMaxPlayerAmount());
+        gameState = new GameState(creator);
         replica = new Replica();
         changedCells = new ArrayList<>();
         mover = new Mover(properties);
@@ -98,7 +98,8 @@ public class GameSession extends OnlineSession {
                 } else {
                     replica.addAllToReplica(gameState.getFieldReplica());
                     sendReplica();
-                    replica.addAllToReplica(gameState.recreate());
+                    gameState.recreate();
+                    replica.addAllToReplica(gameState.getFieldReplica());
                     connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
                 }
                 SessionsList.matchSessionWithGame(order.getSession(), this);
@@ -178,7 +179,7 @@ public class GameSession extends OnlineSession {
             case Bonus:
             case Wood:
                 addObjectToReplica(object);
-                Bonus bonus = creator.createBonus(object.getPosition());
+                Bonus bonus = creator.createBonus(object.getPosition(), true);
                 if (bonus != null) {
                     gameState.get(object.getPosition()).addObject(bonus);
                     addObjectToReplica(bonus);
@@ -204,7 +205,6 @@ public class GameSession extends OnlineSession {
         int playerNum = gameState.playerNum(object);
         sendTo(gameState.playerNum(object), message);
         SessionsList.unfastenSessionWithGame(getPlayersSocket(playerNum));
-        sessionRepo.endGame(this);
         closeSession(playerNum);
     }
 
@@ -387,9 +387,9 @@ public class GameSession extends OnlineSession {
     @Override
     protected void onStop() {
         super.onStop();
-        String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU WON"));
         int lastPlayer = gameState.getAliveNum();
         if (lastPlayer != -1) {
+            String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU WON"));
             sendTo(lastPlayer, message);
             SessionsList.unfastenSessionWithGame(getPlayersSocket(lastPlayer));
             sessionRepo.endGame(this);
@@ -411,6 +411,15 @@ public class GameSession extends OnlineSession {
         } else {
             gameState.getPawns().get(playerNum).die();
             super.onPlayerDisconnect(session);
+            if(allDead()) {
+                stop();
+            }
         }
+    }
+
+    @Override
+    protected void stop() {
+        super.stop();
+        sessionRepo.endGame(this);
     }
 }
