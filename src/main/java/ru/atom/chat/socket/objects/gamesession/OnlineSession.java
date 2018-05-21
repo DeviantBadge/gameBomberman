@@ -73,6 +73,10 @@ public abstract class OnlineSession extends Ticker {
         return playersList.playerNum(name);
     }
 
+    protected WebSocketSession getPlayersSocket(int playerNum) {
+        return playersList.getSession(playerNum);
+    }
+
     protected String getPlayerName(int num) {
         return playersList.getName(num);
     }
@@ -104,8 +108,24 @@ public abstract class OnlineSession extends Ticker {
         createNewPlayer(name);
     }
 
+    // TODO realise it better, i made it fast and inaccurately, thats because we dont match socket with GameSessions what this socket uses
+    public void onPlayerDisconnect(WebSocketSession session) {
+        int playerNum = playerNum(session);
+        if(playerNum == -1)
+            return;
+        playersList.close(playerNum(session));
+    }
+
     public boolean isFull() {
         return playersAmount() == max;
+    }
+
+    protected void closeSession(int playerNum) {
+        playersList.close(playerNum);
+    }
+
+    protected void removePlayer(int playerNum) {
+        playersList.removePlayer(playerNum);
     }
 
 

@@ -6,28 +6,25 @@ import ru.atom.chat.socket.objects.base.GameObject;
 import ru.atom.chat.socket.objects.base.interfaces.Ticking;
 import ru.atom.chat.socket.objects.base.util.Position;
 import ru.atom.chat.socket.enums.ObjectType;
-import ru.atom.chat.socket.objects.gamesession.GameSession;
 
 public class Bomb extends GameObject implements Ticking {
 
-    private static long LOOP_TIME = 5_000; // 5 seconds
     private Pawn owner;
     @JsonIgnore
-    private long timeLeft = LOOP_TIME;
+    private final long loopTime; // 5 seconds
+    @JsonIgnore
+    private long timeLeft;
 
-    public Bomb(@NotNull Position position, @NotNull Pawn owner) {
-        super(ObjectType.Bomb, position);
+    Bomb(Integer id, Position position, Pawn owner, long loopTime) {
+        super(id, ObjectType.Bomb, position);
         this.owner = owner;
-    }
-
-    public Bomb(@NotNull Integer x, @NotNull Integer y, @NotNull Pawn owner) {
-        super(ObjectType.Bomb, new Position(x, y));
-        this.owner = owner;
+        this.loopTime = loopTime;
+        this.timeLeft = loopTime;
     }
 
     @Override
     public void start() {
-        timeLeft = LOOP_TIME;
+        timeLeft = loopTime;
     }
 
     @Override

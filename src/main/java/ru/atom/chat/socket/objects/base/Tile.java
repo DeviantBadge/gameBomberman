@@ -7,8 +7,8 @@ import ru.atom.chat.socket.enums.ObjectType;
 public abstract class Tile extends GameObject {
     private final boolean destroyable;
 
-    public Tile(ObjectType type, Position position, boolean destroyable) {
-        super(type, position);
+    public Tile(Integer id, ObjectType type, Position position, boolean destroyable) {
+        super(id, type, position);
         this.destroyable = destroyable;
     }
 

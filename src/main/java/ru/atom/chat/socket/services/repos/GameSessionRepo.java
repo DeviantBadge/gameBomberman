@@ -31,8 +31,8 @@ public class GameSessionRepo {
         return allSessions.get(id);
     }
 
-    protected GameSession createSession() {
-        GameSession session = new GameSession(new GameSessionProperties());
+    protected GameSession createSession(GameSessionProperties properties) {
+        GameSession session = new GameSession(properties);
         Thread game = new Thread(session);
 
         allSessions.put(session.getId().toString(), session);
@@ -41,10 +41,10 @@ public class GameSessionRepo {
         return session;
     }
 
-    public GameSession pollFreeSession() {
+    public GameSession pollOrCreateSession(GameSessionProperties properties) {
         GameSession session = notReadySessions.poll();
         if(session==null) {
-            return createSession();
+            return createSession(properties);
         }
         return session;
     }

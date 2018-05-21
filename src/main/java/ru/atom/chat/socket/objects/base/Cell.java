@@ -19,6 +19,7 @@ public class Cell {
         this.position = position;
     }
 
+    // TODO mb it isnt good to do such things :3
     public void addObject(GameObject object) {
         if (!objects.contains(object)) {
             objects.add(object);

@@ -7,11 +7,7 @@ import ru.atom.chat.socket.enums.ObjectType;
 
 public class Wall extends Tile {
 
-    public Wall(@NotNull Position position) {
-        super(ObjectType.Wall, position, false);
-    }
-
-    public Wall(@NotNull Integer x, @NotNull Integer y) {
-        super(ObjectType.Wall, new Position(x, y), false);
+    Wall(Integer id, Position position) {
+        super(id, ObjectType.Wall, position, false);
     }
 }

@@ -9,7 +9,7 @@ import ru.atom.chat.socket.message.request.IncomingMessage;
 import ru.atom.chat.socket.message.request.messagedata.Name;
 import ru.atom.chat.socket.message.response.OutgoingMessage;
 import ru.atom.chat.socket.message.response.messagedata.Replica;
-import ru.atom.chat.socket.objects.ObjectCreator;
+import ru.atom.chat.socket.objects.ingame.ObjectCreator;
 import ru.atom.chat.socket.objects.base.Cell;
 import ru.atom.chat.socket.objects.base.GameObject;
 import ru.atom.chat.socket.objects.base.util.Mover;
@@ -24,18 +24,19 @@ import ru.atom.chat.socket.enums.IncomingTopic;
 import ru.atom.chat.socket.properties.GameSessionProperties;
 import ru.atom.chat.socket.services.repos.GameSessionRepo;
 import ru.atom.chat.socket.util.JsonHelper;
+import ru.atom.chat.socket.util.SessionsList;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 // TODO move some functions to super, such as addOrder, act and so on (make another class mb OnlineSession that is abstract)
-public class GameSession extends OnlineSession{
+public class GameSession extends OnlineSession {
 
     private static final Logger log = LoggerFactory.getLogger(GameSession.class);
 
     private GameSessionRepo sessionRepo = GameSessionRepo.getInstance();
-    private Mover mover = new Mover();
+    private Mover mover;
 
     private GameState gameState;
     private List<Cell> changedCells;
@@ -47,9 +48,7 @@ public class GameSession extends OnlineSession{
     // add objects to replica where we change them
     private Replica replica;
 
-    //TODO add game session properties
-    //TODO create array of destroyed objects for reason - we can kill player if we plant 2 bombs near crate (bombs must destroy together like one big bomb!)
-    //TODO mb add something like game type - deathMatch singleLife
+    //TODO mb add something like game type - deathMatch singleLife - or it could be made by properties but how ?
 
     // TODO i dont know how, but part of this code we have to move to another class
 
@@ -60,13 +59,14 @@ public class GameSession extends OnlineSession{
         gameState = new GameState(creator, properties.getMaxPlayerAmount());
         replica = new Replica();
         changedCells = new ArrayList<>();
+        mover = new Mover(properties);
     }
 
     protected Order buildOrder(IncomingMessage message, WebSocketSession session) {
         if (message.getTopic() == IncomingTopic.CONNECT) {
             String name = JsonHelper.fromJson(message.getData(), Name.class).getName();
             int playerNum = playerNum(name);
-            if(playerNum == -1) {
+            if (playerNum == -1) {
                 log.warn("Connecting to lobby where we does not logged in");
                 return null;
             }
@@ -91,23 +91,17 @@ public class GameSession extends OnlineSession{
     protected void carryOut(Order order) {
         switch (order.getIncomingTopic()) {
             case CONNECT:
-
-                // TODO we can create game state when we create game, but then only get its replica
-                // TODO Or when every body connected (we wait for it) we add it to replica
-                // TODO bla bla, i dont know how to do it now
-                if(playersAmount() < properties.getMaxPlayerAmount()) {
+                if (playersAmount() < properties.getMaxPlayerAmount()) {
+                    connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
                     replica.addAllToReplica(gameState.getFieldReplica());
+                    sendReplicaTo(order.getPlayerNum());
                 } else {
+                    replica.addAllToReplica(gameState.getFieldReplica());
                     sendReplica();
                     replica.addAllToReplica(gameState.recreate());
+                    connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
                 }
-
-                connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
-
-
-                    /* TODO Game state must generate starting player position, then we give it to players
-                       TODO Smth like positions array and we add player only by add(playerPawn); */
-                gameState.addPlayer(new Pawn(0,0));
+                SessionsList.matchSessionWithGame(order.getSession(), this);
                 break;
 
             case JUMP:
@@ -152,7 +146,7 @@ public class GameSession extends OnlineSession{
                 }
             }
             if (canPlant) {
-                gameState.addBomb(new Bomb(playerPawn.getPosition().getCenter(), playerPawn));
+                gameState.addBomb(creator.createBomb(playerPawn.getPosition().getCenter(), playerPawn));
                 playerPawn.incBombCount();
             }
         }
@@ -184,7 +178,7 @@ public class GameSession extends OnlineSession{
             case Bonus:
             case Wood:
                 addObjectToReplica(object);
-                Bonus bonus = createBonus();
+                Bonus bonus = creator.createBonus(object.getPosition());
                 if (bonus != null) {
                     gameState.get(object.getPosition()).addObject(bonus);
                     addObjectToReplica(bonus);
@@ -192,12 +186,14 @@ public class GameSession extends OnlineSession{
                 break;
 
             case Pawn:
-                if(!gameState.isWarmUp()) {
+                if (!gameState.isWarmUp()) {
                     onPlayerDeath((Pawn) object);
 
                     if (allDead()) {
                         stop();
                     }
+                } else {
+                    ((Pawn) object).riseAgain();
                 }
                 break;
         }
@@ -205,12 +201,21 @@ public class GameSession extends OnlineSession{
 
     private void onPlayerDeath(Pawn object) {
         String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU DIED"));
+        int playerNum = gameState.playerNum(object);
         sendTo(gameState.playerNum(object), message);
+        SessionsList.unfastenSessionWithGame(getPlayersSocket(playerNum));
+        sessionRepo.endGame(this);
+        closeSession(playerNum);
     }
 
     private void sendReplica() {
         String message = JsonHelper.toJson(new OutgoingMessage(MessageType.REPLICA, replica.toString()));
         sendAll(message);
+    }
+
+    private void sendReplicaTo(int playerNum) {
+        String message = JsonHelper.toJson(new OutgoingMessage(MessageType.REPLICA, replica.toString()));
+        sendTo(playerNum, message);
     }
 
     private boolean allDead() {
@@ -231,7 +236,7 @@ public class GameSession extends OnlineSession{
     }
 
     private void blowBomb(Bomb bomb) {
-        bomb.destroy();
+        creator.destroy(bomb);
 
         int x = bomb.getPosition().getIntX() / 32;
         int y = bomb.getPosition().getIntY() / 32;
@@ -275,42 +280,25 @@ public class GameSession extends OnlineSession{
 
                 case Bonus:
                 case Wood:
-                    stopDestroying = true;
+                    stopDestroying = properties.isBlowStopsOnWall();
                     changed = true;
                     break;
 
                 case Pawn:
-                    if(gameState.isWarmUp())
+                    if (gameState.isWarmUp())
                         continue;
                     changed = true;
                     break;
             }
-            destroyed = destroyed && object.destroy();
+            destroyed = destroyed && creator.destroy(object);
         }
         if (changed && !changedCells.contains(cell))
             changedCells.add(cell);
 
         if (destroyed)
-            addObjectToReplica(new Fire(cell.getPosition()));
+            addObjectToReplica(creator.createFire(cell.getPosition()));
         return destroyed && !stopDestroying;
     }
-
-    private Bonus createBonus() {
-        int randomNum = (int) (Math.random() * 1000);
-        if (randomNum <= 300) {
-            if (randomNum >= 200) {
-                return new Bonus(0, 0, Bonus.BonusType.SPEED);
-            }
-            if (randomNum >= 100) {
-                return new Bonus(0, 0, Bonus.BonusType.RANGE);
-            }
-            if (randomNum >= 0) {
-                return new Bonus(0, 0, Bonus.BonusType.BOMBS);
-            }
-        }
-        return null;
-    }
-
 
     // TODO i dont like it, but now i cant do better, remake it
     private void movePlayers(long ms) {
@@ -400,7 +388,29 @@ public class GameSession extends OnlineSession{
     protected void onStop() {
         super.onStop();
         String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU WON"));
-        sendTo(gameState.getAliveNum(), message);
-        sessionRepo.endGame(this);
+        int lastPlayer = gameState.getAliveNum();
+        if (lastPlayer != -1) {
+            sendTo(lastPlayer, message);
+            SessionsList.unfastenSessionWithGame(getPlayersSocket(lastPlayer));
+            sessionRepo.endGame(this);
+        }
+    }
+
+    @Override
+    public void addPlayer(String name) {
+        super.addPlayer(name);
+        gameState.addPlayer();
+    }
+
+    @Override
+    public void onPlayerDisconnect(WebSocketSession session) {
+        int playerNum = playerNum(session);
+        if (gameState.isWarmUp()) {
+            gameState.getPawns().remove(playerNum);
+            removePlayer(playerNum);
+        } else {
+            gameState.getPawns().get(playerNum).die();
+            super.onPlayerDisconnect(session);
+        }
     }
 }

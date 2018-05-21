@@ -4,22 +4,27 @@ import ru.atom.chat.socket.message.response.messagedata.Replica;
 import ru.atom.chat.socket.objects.base.interfaces.Replicable;
 import ru.atom.chat.socket.objects.base.util.Position;
 import ru.atom.chat.socket.objects.ingame.*;
+import ru.atom.chat.socket.properties.GameSessionProperties;
 import ru.atom.chat.socket.util.JsonHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class JsonCreationCheck {
 
     public static void main(String[] args) {
+        GameSessionProperties properties = new GameSessionProperties();
+        ObjectCreator creator = new ObjectCreator(properties);
         Position position = new Position(10,20);
-        Pawn pawn = new Pawn(position);
-        Bomb bomb = new Bomb(position,pawn);
-        Bonus bonus1 = new Bonus(position, Bonus.BonusType.BOMBS);
-        Bonus bonus2 = new Bonus(position, Bonus.BonusType.SPEED);
-        Bonus bonus3 = new Bonus(position, Bonus.BonusType.RANGE);
-        Fire fire = new Fire(position);
-        Wall wall = new Wall(position);
-        Wood wood = new Wood(position);
+        Pawn pawn = creator.createPawn(position);
+        Bomb bomb = creator.createBomb(position, pawn);
+        Bonus bonus1 = creator.createBonus(position, Bonus.BonusType.BOMBS);
+        Bonus bonus2 = creator.createBonus(position, Bonus.BonusType.SPEED);
+        Bonus bonus3 = creator.createBonus(position, Bonus.BonusType.RANGE);
+        Fire fire = creator.createFire(position);
+        Wall wall = creator.createWall(position);
+        Wood wood = creator.createWood(position);
+
         Replica replica = new Replica();
         replica.addToReplica(pawn);
         replica.addToReplica(bomb);

@@ -31,7 +31,7 @@ public class PlayersList {
         }
 
         public void setSession(WebSocketSession session) {
-            if (this.session != null)
+            if (this.session != null && session != null)
                 log.warn("Smbdy want to connect to existing player");
             else
                 this.session = session;
@@ -96,18 +96,21 @@ public class PlayersList {
     public void sendAll(String data) {
         players.forEach(onlinePlayer -> {
             try {
-                if (onlinePlayer.getSession() != null)
-                    onlinePlayer.getSession().sendMessage(new TextMessage(data));
+                WebSocketSession socketSession = onlinePlayer.getSession();
+                if (socketSession != null && socketSession.isOpen())
+                    socketSession.sendMessage(new TextMessage(data));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
     }
 
+    // TODO why here synchronized dont help us?
     public void sendTo(int playerNum, String data) {
         try {
-            if (players.get(playerNum).getSession() != null)
-                players.get(playerNum).getSession().sendMessage(new TextMessage(data));
+            WebSocketSession socketSession = players.get(playerNum).getSession();
+            if (socketSession != null && socketSession.isOpen())
+                socketSession.sendMessage(new TextMessage(data));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -115,5 +118,19 @@ public class PlayersList {
 
     public int size() {
         return players.size();
+    }
+
+    public void close(int playerNum) {
+        synchronized (players.get(playerNum)) {
+            players.get(playerNum).setSession(null);
+        }
+    }
+
+    public WebSocketSession getSession(int playerNum) {
+        return players.get(playerNum).getSession();
+    }
+
+    public void removePlayer(int playerNum) {
+        players.remove(playerNum);
     }
 }

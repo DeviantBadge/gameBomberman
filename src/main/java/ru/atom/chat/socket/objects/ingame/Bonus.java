@@ -15,13 +15,8 @@ public class Bonus extends GameObject {
 
     private final BonusType bonusType;
 
-    public Bonus(@NotNull Position position, @NotNull BonusType bonusType) {
-        super(ObjectType.Bonus, position);
-        this.bonusType = bonusType;
-    }
-
-    public Bonus(@NotNull Integer x, @NotNull Integer y, @NotNull BonusType bonusType) {
-        super(ObjectType.Bonus, new Position(x, y));
+    Bonus(Integer id, Position position, BonusType bonusType) {
+        super(id, ObjectType.Bonus, position);
         this.bonusType = bonusType;
     }
 

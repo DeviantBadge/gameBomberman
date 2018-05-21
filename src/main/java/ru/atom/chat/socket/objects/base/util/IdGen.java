@@ -26,6 +26,7 @@ public class IdGen {
     }
 
     public void addDeletedId(Integer id) {
-        deletedId.add(id);
+        if(checkDeleted)
+            deletedId.add(id);
     }
 }

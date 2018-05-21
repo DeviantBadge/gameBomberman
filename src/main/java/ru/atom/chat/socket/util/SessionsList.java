@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import ru.atom.chat.socket.objects.gamesession.GameSession;
+import ru.atom.chat.socket.objects.gamesession.OnlineSession;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,6 +19,7 @@ public class SessionsList {
     private static class MatchedSocked {
         private WebSocketSession session;
         private String user;
+        private OnlineSession onlineSession;
 
         MatchedSocked(@NotNull WebSocketSession session, String user) {
             this.session = session;
@@ -33,6 +36,14 @@ public class SessionsList {
 
         public void setUser(String user) {
             this.user = user;
+        }
+
+        public void setOnlineSession(OnlineSession onlineSession) {
+            this.onlineSession = onlineSession;
+        }
+
+        public OnlineSession getOnlineSession() {
+            return onlineSession;
         }
     }
 
@@ -92,6 +103,28 @@ public class SessionsList {
         log.warn("Tried to match session with name, but didn`t find session.");
     }
 
+    public static void matchSessionWithGame(WebSocketSession socket, GameSession game) {
+        for (MatchedSocked session : sessions) {
+            if (socket.equals(session.getSession())) {
+                session.setOnlineSession(game);
+                return;
+            }
+        }
+        log.warn("Tried to match session with name, but didn`t find session.");
+    }
+
+    public static void unfastenSessionWithGame(WebSocketSession socket) {
+        if(socket == null)
+            return;
+        for (MatchedSocked session : sessions) {
+            if (socket.equals(session.getSession())) {
+                session.setOnlineSession(null);
+                return;
+            }
+        }
+        log.warn("Tried to unfasten session with name, but cant find session.");
+    }
+
     public static void unfastenSessionWithName(@NotNull String name) {
         for (MatchedSocked session : sessions) {
             if (name.equals(session.getUser())) {
@@ -100,5 +133,14 @@ public class SessionsList {
             }
         }
         log.warn("Tried to unfasten session with name, but cant find session.");
+    }
+
+    public static OnlineSession getOnlineSession(WebSocketSession socket) {
+        for (MatchedSocked session : sessions) {
+            if (socket.equals(session.getSession())) {
+                return session.getOnlineSession();
+            }
+        }
+        return null;
     }
 }

@@ -11,20 +11,20 @@ public class Pawn extends GameObject {
     private Direction direction;
     private boolean alive = true;
     private boolean moving = false;
+
     // BONUSES
     private int blowRange = 1;
     private int maxBombAmount = 1;
-    private int speedBonus = 1;
+    private int speedBonus = 0;
+
     // BOMBS
     private int bombCount = 0;
 
-    public Pawn(@NotNull Position position) {
-        super(ObjectType.Pawn, position);
-        setDirection(Direction.DOWN);
-    }
-
-    public Pawn(@NotNull Integer x, @NotNull Integer y) {
-        super(ObjectType.Pawn, new Position(x, y));
+    Pawn(Integer id, Position position, int blowRange, int maxBombAmount, int speedBonus) {
+        super(id, ObjectType.Pawn, position);
+        this.blowRange = blowRange;
+        this.maxBombAmount = maxBombAmount;
+        this.speedBonus = speedBonus;
         setDirection(Direction.DOWN);
     }
 
@@ -120,8 +120,18 @@ public class Pawn extends GameObject {
     }
 
     @Override
+    @JsonIgnore
+    public boolean isDeleted() {
+        return false;
+    }
+
+    @Override
     public boolean destroy() {
         die();
         return true;
+    }
+
+    public void riseAgain() {
+        alive = true;
     }
 }

@@ -3,43 +3,17 @@ package ru.atom.chat.socket.objects.base.util;
 import org.springframework.stereotype.Service;
 import ru.atom.chat.socket.enums.Direction;
 import ru.atom.chat.socket.objects.ingame.Pawn;
+import ru.atom.chat.socket.properties.GameSessionProperties;
 
-@Service
 public class Mover {
-    private final static int SPEED_PER_SECOND_X = 60;
-    private final static int SPEED_PER_SECOND_Y = 60;
-    private final int speedX;
-    private final int speedY;
+    private GameSessionProperties properties;
 
-    public Mover() {
-        speedX = SPEED_PER_SECOND_X;
-        speedY = SPEED_PER_SECOND_Y;
+    public Mover(GameSessionProperties properties) {
+        this.properties = properties;
     }
 
-    public Position move(Position target, Direction direction, long ms) {
+    private Position move(Position target, double speedX, double speedY, Direction direction, long ms) {
         switch (direction) {
-            case UP:
-                return new Position(target.getX(), target.getY() + getSpeedY() * ms / 1000.0);
-
-            case RIGHT:
-                return new Position(target.getX() + getSpeedX() * ms / 1000.0, target.getY());
-
-            case DOWN:
-                return new Position(target.getX(), target.getY() - getSpeedY() * ms / 1000.0);
-
-            case LEFT:
-                return new Position(target.getX() - getSpeedX() * ms / 1000.0, target.getY());
-
-            default:
-                return target;
-        }
-    }
-
-    public Position move(Pawn player, long ms) {
-        Position target = player.getPosition();
-        double speedX = getSpeedX() * (1 + 0.33 * (player.getSpeedBonus() - 1));
-        double speedY = getSpeedY() * (1 + 0.33 * (player.getSpeedBonus() - 1));
-        switch (player.getDirection()) {
             case UP:
                 return new Position(target.getX(), target.getY() + speedY * ms / 1000.0);
 
@@ -57,11 +31,12 @@ public class Mover {
         }
     }
 
-    private int getSpeedX() {
-        return speedX;
-    }
+    public Position move(Pawn player, long ms) {
+        double speedX = properties.getMovingSpeedX()
+                * (1 + properties.getSpeedBonusCoef() * player.getSpeedBonus());
+        double speedY = properties.getMovingSpeedY()
+                * (1 + properties.getSpeedBonusCoef() * player.getSpeedBonus());
 
-    private int getSpeedY() {
-        return speedY;
+        return move(player.getPosition(), speedX, speedY, player.getDirection(), ms);
     }
 }

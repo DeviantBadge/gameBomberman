@@ -13,15 +13,14 @@ public abstract class GameObject implements Destroyable, Replicable {
     protected final static Logger log = LoggerFactory.getLogger(GameObject.class);
     // TODO mb its better to give object id from game session
     // TODO make GameObject positionable
-    private final static IdGen idGen = new IdGen(false);
     private final Integer id;
     private final ObjectType type;
 
     private Position position;
-    private boolean deleted = false;
+    private boolean destroyed = false;
 
-    public GameObject(ObjectType type, Position position) {
-        id = idGen.generateId();
+    public GameObject(Integer id, ObjectType type, Position position) {
+        this.id = id;
         this.type = type;
         this.position = position;
     }
@@ -58,27 +57,23 @@ public abstract class GameObject implements Destroyable, Replicable {
         return false;
     }
 
-    protected void delete() {
-        idGen.addDeletedId(getId());
-        deleted = true;
-    }
-
-    @JsonIgnore
-    final public boolean isDeleted() {
-        return deleted;
-    }
-
     @JsonIgnore
     @Override
     public boolean isDestroyed() {
-        return isDeleted();
+        return destroyed;
+    }
+
+    // for example we have player, it could be destroyed (killed) but it doesn`t mean that we have to delete it from game
+    // but for common objects its wrong
+    @JsonIgnore
+    public boolean isDeleted() {
+        return destroyed;
     }
 
     @Override
     public boolean destroy() {
         if(isDestroyable() && !isDestroyed()) {
-            delete();
-            return true;
+            return destroyed = true;
         }
         return false;
     }

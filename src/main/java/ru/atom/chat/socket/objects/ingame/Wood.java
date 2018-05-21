@@ -7,11 +7,7 @@ import ru.atom.chat.socket.enums.ObjectType;
 
 public class Wood extends Tile {
 
-    public Wood(@NotNull Position position) {
-        super(ObjectType.Wood, position, true);
-    }
-
-    public Wood(@NotNull Integer x, @NotNull Integer y) {
-        super(ObjectType.Wood, new Position(x, y), true);
+    Wood(Integer id, Position position) {
+        super(id, ObjectType.Wood, position, true);
     }
 }
