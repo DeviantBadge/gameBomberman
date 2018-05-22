@@ -128,19 +128,10 @@ MessageBroker.prototype.plantBomb = function () {
 // Experimental
 MessageBroker.prototype.jump = function () {
     var template = {
-        topic: "CONNECT",
-        gameId: gGameEngine.gameId,
-        data: {
-            name: gGameEngine.playerName
-        }
-    };
-    return JSON.stringify(template);
-    /*
-    var template = {
         topic: "JUMP",
         data: {}
     };
-    */
+    return JSON.stringify(template);
 };
 
 gMessageBroker = new MessageBroker();
