@@ -51,8 +51,8 @@ Game.prototype.finish = function () {
 
 
 Game.prototype.drawBackground = function () {
-    for (var i = 0; i < gCanvas.tiles.w; i++) {
-        for (var j = 0; j < gCanvas.tiles.h; j++) {
+    for (var i = 0; i < gCanvas.getWidthInTiles(); i++) {
+        for (var j = 0; j < gCanvas.getHeightInTiles(); j++) {
             var bitmap = new createjs.Bitmap(gGameEngine.asset.tile.grass);
             bitmap.x = i * gCanvas.tileSize;
             bitmap.y = j * gCanvas.tileSize;

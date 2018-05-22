@@ -26,8 +26,12 @@ public class Cell {
         } else
             log.warn("You trying to add existing object to cell");
 
-        if (object.getType() != ObjectType.Pawn)
+        if (object.getType() != ObjectType.Pawn) {
+            if(!position.equals(object.getPosition())) {
+                log.warn("Incorrect object position, it must be equals to cell position");
+            }
             object.setPosition(position);
+        }
 
     }
 

@@ -1,18 +1,64 @@
 package ru.atom.chat.socket.properties;
 
+import ru.atom.chat.socket.objects.gamesession.state.FieldType;
+
 public class GameSessionProperties extends GameObjectProperties {
     // ********************************
     // Session
     // ********************************
     private int maxPlayerAmount = 2;
+    private FieldType warmUpFieldType = FieldType.WARM_UP;
+    private FieldType gameFieldType = FieldType.BONUS_VEIN;
+
+    private int fieldSizeX = 27;
+    private int fieldSizeY = 17;
 
     public GameSessionProperties setMaxPlayerAmount(int maxPlayerAmount) {
+        maxPlayerAmount = intervalCheck(maxPlayerAmount, 2, 4);
         this.maxPlayerAmount = maxPlayerAmount;
+        return this;
+    }
+
+    public GameSessionProperties setWarmUpFieldType(FieldType warmUpFieldType) {
+        this.warmUpFieldType = warmUpFieldType;
+        return this;
+    }
+
+    public GameSessionProperties setGameFieldType(FieldType gameFieldType) {
+        this.gameFieldType = gameFieldType;
+        return this;
+    }
+
+    public GameSessionProperties setFieldSizeX(int fieldSizeX) {
+        fieldSizeX = intervalCheck(fieldSizeX, 10, 50);
+        this.fieldSizeX = fieldSizeX;
+        return this;
+    }
+
+    public GameSessionProperties setFieldSizeY(int fieldSizeY) {
+        fieldSizeY = intervalCheck(fieldSizeY, 10, 50);
+        this.fieldSizeY = fieldSizeY;
         return this;
     }
 
     public int getMaxPlayerAmount() {
         return maxPlayerAmount;
+    }
+
+    public FieldType getWarmUpFieldType() {
+        return warmUpFieldType;
+    }
+
+    public FieldType getGameFieldType() {
+        return gameFieldType;
+    }
+
+    public int getFieldSizeX() {
+        return fieldSizeX;
+    }
+
+    public int getFieldSizeY() {
+        return fieldSizeY;
     }
 
     // ********************************
@@ -60,22 +106,26 @@ public class GameSessionProperties extends GameObjectProperties {
     private double movingSpeedY = 60;
 
     public GameSessionProperties setSpeedBonusCoef(double speedBonusCoef) {
+        speedBonusCoef = intervalCheck(speedBonusCoef, 0, 1);
         this.speedBonusCoef = speedBonusCoef;
         return this;
     }
 
     public GameSessionProperties setMovingSpeed(double movingSpeed) {
+        movingSpeed = intervalCheck(movingSpeed, 10, 1000);
         this.movingSpeedX = movingSpeed;
         this.movingSpeedY = movingSpeed;
         return this;
     }
 
     public GameSessionProperties setMovingSpeedX(double movingSpeedX) {
+        movingSpeedX = intervalCheck(movingSpeedX, 10, 1000);
         this.movingSpeedX = movingSpeedX;
         return this;
     }
 
     public GameSessionProperties setMovingSpeedY(double movingSpeedY) {
+        movingSpeedY = intervalCheck(movingSpeedY, 10, 1000);
         this.movingSpeedY = movingSpeedY;
         return this;
     }
@@ -102,7 +152,11 @@ public class GameSessionProperties extends GameObjectProperties {
                 .setMaxPlayerAmount((int) (Math.random() * 2) + 2)
                 .setBlowStopsOnWall(((int) (Math.random() * 2)) > 0)
                 .setSpeedBonusCoef(Math.random() / 2)
-                .setMovingSpeed(Math.random() * 30 + 45);
+                .setMovingSpeed(Math.random() * 30 + 45)
+                .setGameFieldType(FieldType.values()[(int) (Math.random() * FieldType.values().length)])
+                .setWarmUpFieldType(FieldType.values()[(int) (Math.random() * FieldType.values().length)])
+                .setFieldSizeX(27 + (int) (Math.random() * 5))
+                .setFieldSizeY(17 + (int) (Math.random() * 5));
     }
 
     @Override

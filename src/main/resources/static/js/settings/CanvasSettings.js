@@ -4,14 +4,10 @@ var CanvasSettings = function () {
         w: 27,
         h: 17
     };
-    this.size = {
-        w: this.tileSize * this.tiles.w,
-        h: this.tileSize * this.tiles.h
-    };
 };
 
 CanvasSettings.prototype.getWidthInPixel = function () {
-    return this.size.w;
+    return this.tiles.w * this.tileSize;
 };
 
 CanvasSettings.prototype.getWidthInTiles = function () {
@@ -19,7 +15,7 @@ CanvasSettings.prototype.getWidthInTiles = function () {
 };
 
 CanvasSettings.prototype.getHeightInPixel = function () {
-    return this.size.h;
+    return this.tiles.h * this.tileSize;
 };
 
 CanvasSettings.prototype.getHeightInTiles = function () {

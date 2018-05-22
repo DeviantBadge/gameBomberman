@@ -57,6 +57,43 @@ Menu.prototype.drawPlayButton = function () {
     this.drawPawnIcon(buttonX, buttonY, buttonSize);
 };
 
+Menu.prototype.drawPlay = function (x, y, buttonSize) {
+    var playButtonBackgroundGraphics = new createjs.Graphics()
+        .beginFill("rgba(0, 0, 0, 0.5)")
+        .drawRect(x, y, buttonSize, buttonSize);
+
+    var background = new createjs.Shape(playButtonBackgroundGraphics);
+    this.stage.addChild(background);
+    this.elements.push(background);
+    this.setHandCursor(background);
+
+    background.addEventListener('click', function() {
+        gGameEngine.startGame()
+    });
+};
+
+Menu.prototype.drawPlay = function (x, y, buttonSize) {
+    var playText = new createjs.Text("Play", "32px Helvetica", "#ff4444");
+    // counting central position inside background
+    playText.x = x + (buttonSize - playText.getMeasuredWidth()) / 2;
+    var shiftFromDownside = 20;
+    playText.y = (y + buttonSize) - (playText.getMeasuredHeight() + shiftFromDownside);
+    this.stage.addChild(playText);
+    this.elements.push(playText);
+};
+
+Menu.prototype.drawPawn = function (x, y, buttonSize) {
+    var singleIcon = new createjs.Bitmap(gGameEngine.asset.pawn);
+    var pawnIconSize = 48;
+    singleIcon.sourceRect = new createjs.Rectangle(0, 0, pawnIconSize, pawnIconSize);
+    // counting central position inside background
+    singleIcon.x = x + (buttonSize - pawnIconSize) / 2;
+    var shiftFromUpside = 13;
+    singleIcon.y = y + shiftFromUpside;
+    gGameEngine.stage.addChild(singleIcon);
+    this.elements.push(singleIcon);
+};
+
 Menu.prototype.drawPlayButtonBackground = function (x, y, buttonSize) {
     var playButtonBackgroundGraphics = new createjs.Graphics()
         .beginFill("rgba(0, 0, 0, 0.5)")

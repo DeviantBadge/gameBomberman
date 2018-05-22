@@ -12,10 +12,7 @@ var GameEngine = function () {
 };
 
 GameEngine.prototype.load = function () {
-    this.stage = new createjs.Stage("canvas");
-    this.stage.canvas.width = gCanvas.getWidthInPixel();
-    this.stage.canvas.height = gCanvas.getHeightInPixel();
-    this.stage.enableMouseOver();
+    this.stage = loadStage();
 
     var queue = new createjs.LoadQueue();
     var self = this;
@@ -43,6 +40,14 @@ GameEngine.prototype.load = function () {
         {id: "bonus_explosion", src: "img/bonus_explosion.png"}
     ]);
 };
+
+function loadStage() {
+    var stage = new createjs.Stage("canvas");
+    stage.canvas.width = gCanvas.getWidthInPixel();
+    stage.canvas.height = gCanvas.getHeightInPixel();
+    stage.enableMouseOver();
+    return stage;
+}
 
 GameEngine.prototype.initCanvas = function () {
     this.menu = new Menu(this.stage);

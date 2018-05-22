@@ -10,6 +10,7 @@ import ru.atom.chat.socket.objects.ingame.Bomb;
 import ru.atom.chat.socket.objects.ingame.Pawn;
 import ru.atom.chat.socket.objects.ingame.Wall;
 import ru.atom.chat.socket.objects.ingame.Wood;
+import ru.atom.chat.socket.properties.GameSessionProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,27 +25,27 @@ public class GameState {
 
     private ObjectCreator creator;
     private GameField gameField;
+    private GameSessionProperties properties;
 
-    public GameState(ObjectCreator creator) {
-        this(creator, 27, 17);
-    }
-
-    private GameState(ObjectCreator creator, int sizeX, int sizeY) {
+    public GameState(GameSessionProperties properties, ObjectCreator creator) {
+        this.properties = properties;
         this.creator = creator;
-        gameField = new GameField(creator, sizeX, sizeY);
+        gameField = new GameField(creator, properties.getFieldSizeX(), properties.getFieldSizeY());
         bombs = new ArrayList<>();
         pawns = new ArrayList<>();
 
         createWarmUpField();
     }
+
     private void createWarmUpField() {
         bombs.clear();
-        gameField.createField(FieldType.WARM_UP);
+        gameField.createField(properties.getWarmUpFieldType());
         warmUp = true;
     }
-    public void createGameField() {
+
+    private void createGameField() {
         bombs.clear();
-        gameField.createField(FieldType.BONUS_VEIN);
+        gameField.createField(properties.getGameFieldType());
         warmUp = false;
     }
 
@@ -60,7 +61,7 @@ public class GameState {
     private void resetPawns() {
         int pawnAmount = pawns.size();
         getPawns().clear();
-        for(int i = 0; i < pawnAmount; i ++)
+        for (int i = 0; i < pawnAmount; i++)
             addPlayer();
     }
 
@@ -77,7 +78,9 @@ public class GameState {
 
     public void addBomb(Bomb bomb) {
         bombs.add(bomb);
-        get(bomb.getPosition()).addObject(bomb);
+        Cell cell = get(bomb.getPosition());
+        bomb.setPosition(cell.getPosition());
+        cell.addObject(bomb);
     }
 
     public Position checkFieldBorders(Position newPosition) {
@@ -118,8 +121,8 @@ public class GameState {
     }
 
     public int getAliveNum() {
-        for(int i = 0; i < pawns.size(); i ++) {
-            if(pawns.get(i).isAlive())
+        for (int i = 0; i < pawns.size(); i++) {
+            if (pawns.get(i).isAlive())
                 return i;
         }
         return -1;
@@ -127,8 +130,8 @@ public class GameState {
 
     public int deadPawnsAmount() {
         int amount = 0;
-        for(int i = 0; i < pawns.size(); i ++) {
-            if(!pawns.get(i).isAlive())
+        for (int i = 0; i < pawns.size(); i++) {
+            if (!pawns.get(i).isAlive())
                 amount++;
         }
         return amount;

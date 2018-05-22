@@ -50,6 +50,9 @@ public class Position {
 
     @Override
     public boolean equals(Object anObject) {
+        if(anObject == null) {
+            return false;
+        }
         if (this == anObject) {
             return true;
         }

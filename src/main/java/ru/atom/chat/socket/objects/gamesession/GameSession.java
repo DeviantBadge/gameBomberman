@@ -8,6 +8,7 @@ import ru.atom.chat.socket.enums.MessageType;
 import ru.atom.chat.socket.message.request.IncomingMessage;
 import ru.atom.chat.socket.message.request.messagedata.Name;
 import ru.atom.chat.socket.message.response.OutgoingMessage;
+import ru.atom.chat.socket.message.response.messagedata.Possess;
 import ru.atom.chat.socket.message.response.messagedata.Replica;
 import ru.atom.chat.socket.objects.ingame.ObjectCreator;
 import ru.atom.chat.socket.objects.base.Cell;
@@ -56,7 +57,7 @@ public class GameSession extends OnlineSession {
         super(properties.getMaxPlayerAmount());
         this.properties = properties;
         creator = new ObjectCreator(properties);
-        gameState = new GameState(creator);
+        gameState = new GameState(properties, creator);
         replica = new Replica();
         changedCells = new ArrayList<>();
         mover = new Mover(properties);
@@ -93,6 +94,7 @@ public class GameSession extends OnlineSession {
             case CONNECT:
                 if (playersAmount() < properties.getMaxPlayerAmount()) {
                     connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
+                    // sendTo(order.getPlayerNum(), getPossess());
                     replica.addAllToReplica(gameState.getFieldReplica());
                     sendReplicaTo(order.getPlayerNum());
                 } else {
@@ -178,10 +180,11 @@ public class GameSession extends OnlineSession {
         switch (object.getType()) {
             case Bonus:
             case Wood:
+                Cell cell = gameState.get(object.getPosition());
                 addObjectToReplica(object);
-                Bonus bonus = creator.createBonus(object.getPosition(), true);
+                Bonus bonus = creator.createBonus(cell.getPosition(), true);
                 if (bonus != null) {
-                    gameState.get(object.getPosition()).addObject(bonus);
+                    cell.addObject(bonus);
                     addObjectToReplica(bonus);
                 }
                 break;
@@ -189,7 +192,6 @@ public class GameSession extends OnlineSession {
             case Pawn:
                 if (!gameState.isWarmUp()) {
                     onPlayerDeath((Pawn) object);
-
                     if (allDead()) {
                         stop();
                     }
@@ -216,6 +218,11 @@ public class GameSession extends OnlineSession {
     private void sendReplicaTo(int playerNum) {
         String message = JsonHelper.toJson(new OutgoingMessage(MessageType.REPLICA, replica.toString()));
         sendTo(playerNum, message);
+    }
+
+    private String getPossess() {
+        Possess possess = new Possess(gameState.getSizeY(), gameState.getSizeX(), 0);
+        return JsonHelper.toJson(new OutgoingMessage(MessageType.POSSESS, JsonHelper.toJson(possess)));
     }
 
     private boolean allDead() {
@@ -411,7 +418,7 @@ public class GameSession extends OnlineSession {
         } else {
             gameState.getPawns().get(playerNum).die();
             super.onPlayerDisconnect(session);
-            if(allDead()) {
+            if (allDead()) {
                 stop();
             }
         }

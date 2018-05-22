@@ -7,6 +7,7 @@ public class GameObjectProperties {
     private long bombBlowTimeMs = 5000;
 
     public GameObjectProperties setBombBlowTimeMs(long bombBlowTimeMs) {
+        bombBlowTimeMs = intervalCheck((int) bombBlowTimeMs, 1_000, 20_000);
         this.bombBlowTimeMs = bombBlowTimeMs;
         return this;
     }
@@ -27,14 +28,8 @@ public class GameObjectProperties {
     }
 
     public GameObjectProperties setBonusProbability(double bonusProbability) {
-        if (bonusProbability < 0)
-            this.bonusProbability = 0;
-        else {
-            if (bombsProbability > 1) {
-                this.bonusProbability = 1;
-            } else
-                this.bonusProbability = bonusProbability;
-        }
+        bonusProbability = intervalCheck(bonusProbability, 0, 1);
+        this.bonusProbability = bonusProbability;
         return this;
     }
 
@@ -75,16 +70,19 @@ public class GameObjectProperties {
     private int rangeOnStart = 1;
 
     public GameObjectProperties setSpeedOnStart(int speedOnStart) {
+        bonusProbability = intervalCheck(bonusProbability, 0, 100);
         this.speedOnStart = speedOnStart;
         return this;
     }
 
     public GameObjectProperties setBombsOnStart(int bombsOnStart) {
+        bonusProbability = intervalCheck(bonusProbability, 1, 100);
         this.bombsOnStart = bombsOnStart;
         return this;
     }
 
     public GameObjectProperties setRangeOnStart(int rangeOnStart) {
+        bonusProbability = intervalCheck(bonusProbability, 1, 100);
         this.rangeOnStart = rangeOnStart;
         return this;
     }
@@ -122,5 +120,29 @@ public class GameObjectProperties {
                 .setSpeedOnStart((int) (Math.random() * 3) + 1)
                 .setBombsOnStart((int) (Math.random() * 3) + 1)
                 .setRangeOnStart((int) (Math.random() * 3) + 1);
+    }
+
+
+    // ********************************
+    // Util
+    // ********************************
+    protected static int intervalCheck(int value, int leftBorder, int rightBorder) {
+        if(leftBorder > rightBorder)
+            return value;
+        if(value < leftBorder)
+            return leftBorder;
+        if(value > rightBorder)
+            return rightBorder;
+        return value;
+    }
+
+    protected static double intervalCheck(double value, double leftBorder, double rightBorder) {
+        if(leftBorder > rightBorder)
+            return value;
+        if(value < leftBorder)
+            return leftBorder;
+        if(value > rightBorder)
+            return rightBorder;
+        return value;
     }
 }
