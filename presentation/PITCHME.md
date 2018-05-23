@@ -27,7 +27,7 @@ Game Server is a application that do in cycle:
 0. send game state to clients (replica)
 
 ---
-
+### Server structure looks like this: 
 <img src="presentation/assets/img/GameServerArchitecture.png" alt="exception" style="width: 900px;"/>
 
 ---
@@ -35,12 +35,13 @@ Game Server is a application that do in cycle:
 0. Game architecture
 0. **[Game client]**
 0. Game server
+0. Game mechanics
 
 ---
 ## Game client
-Game client is a separate HTML5 project (js+canvas)  
+- We didn`t changed game client a lot, it still similar to
 https://github.com/rybalkinsd/atom-bomberman-frontend  
-Check it out
+- changes affected only Cluster settings.
 
 ---
 ### Instances
@@ -51,12 +52,23 @@ Check it out
 - Bonus
 
 ---
-### Front infrastructure
-- GameEngine - basic mechanics and render
-- InputEngine - input handling 
-- ClusterSettings - infrastructure settings
+
+## Agenda
+0. Game architecture
+0. Game client
+0. **[Game server]**
+0. Game mechanics
 
 ---
+
+## Game server
+Game server now can create sessions with parameters
+
+Such as - Player bonuses on start, bomb mechanics and a lot more 
+
+---
+
+
 **Оставьте обратную связь**
 (вам на почту придет анкета)  
 
