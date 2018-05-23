@@ -2,9 +2,9 @@
 # Java
 ## Presentation of the final project
 Made by: 
-Vorobyov Evgeniy 
-Udovichenko Danil 
-Volcovich Maksim
+- Vorobyov Evgeniy 
+- Udovichenko Danil 
+- Volcovich Maksim
 
 ---
 ## Отметьтесь на портале
