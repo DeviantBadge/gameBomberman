@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.atom.game.gamesession.GameSession;
-import ru.atom.game.gamesession.properties.GameSessionProperties;
+import ru.atom.game.gamesession.properties.GameSessionPropertiesCreator;
 import ru.atom.game.repos.GameSessionRepo;
 
 @Controller
@@ -25,12 +25,12 @@ public class MatchMakerController {
             method = RequestMethod.POST,
             produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> join(@RequestParam("name") String name) {
-        GameSessionProperties properties = new GameSessionProperties()
+        GameSessionPropertiesCreator creator = new GameSessionPropertiesCreator()
                 .setMaxPlayerAmount(3)
                 .setBlowStopsOnWall(false)
                 .setSpeedOnStart(3)
                 .setProbabilities(1,1,1);
-        GameSession session = gameSessionRepo.pollOrCreateSession(properties);
+        GameSession session = gameSessionRepo.pollOrCreateSession(creator.createProperties());
         session.addPlayer(name);
         gameSessionRepo.putSessionBack(session);
 
