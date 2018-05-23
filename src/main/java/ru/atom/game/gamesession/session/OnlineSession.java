@@ -1,6 +1,8 @@
-package ru.atom.game.gamesession;
+package ru.atom.game.gamesession.session;
 
 import org.springframework.web.socket.WebSocketSession;
+import ru.atom.game.gamesession.lists.OrderList;
+import ru.atom.game.gamesession.lists.PlayersList;
 import ru.atom.game.socket.message.request.IncomingMessage;
 import ru.atom.game.objects.base.util.IdGen;
 import ru.atom.game.objects.orders.Order;

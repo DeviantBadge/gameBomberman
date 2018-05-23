@@ -1,4 +1,4 @@
-package ru.atom.game.gamesession;
+package ru.atom.game.gamesession.lists;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +49,7 @@ public class PlayersList {
         this.maxAmount = maxPlayerAmount;
     }
 
-    int playerNum(WebSocketSession session) {
+    public int playerNum(WebSocketSession session) {
         int playerNum = -1;
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).getSession() == session) {

@@ -6,14 +6,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import ru.atom.game.gamesession.GameSession;
-import ru.atom.game.gamesession.OnlineSession;
+import ru.atom.game.gamesession.session.GameSession;
+import ru.atom.game.gamesession.session.OnlineSession;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Component
 public class SessionsList {
 
     private static class MatchedSocked {

@@ -1,17 +1,18 @@
 package ru.atom.game.objects.orders;
 
 import org.springframework.web.socket.WebSocketSession;
+import ru.atom.game.enums.Direction;
 import ru.atom.game.socket.message.request.IncomingMessage;
 import ru.atom.game.socket.message.request.messagedata.InGameMovement;
 import ru.atom.game.enums.IncomingTopic;
-import ru.atom.game.enums.MovementType;
 import ru.atom.game.socket.message.request.messagedata.Name;
 import ru.atom.game.socket.util.JsonHelper;
 
+// приказ
 public class Order {
     private int playerNum;
     private IncomingTopic incomingTopic;
-    private MovementType movementType = null;
+    private Direction movementType = null;
     private String name = null;
     private WebSocketSession session = null;
 
@@ -53,7 +54,7 @@ public class Order {
         return incomingTopic;
     }
 
-    public MovementType getMovementType() {
+    public Direction getMovementType() {
         return movementType;
     }
 }

@@ -1,4 +1,4 @@
-package ru.atom.game.gamesession;
+package ru.atom.game.gamesession.session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -408,6 +408,8 @@ public class GameSession extends OnlineSession {
         gameState.addPlayer();
     }
 
+    // TODO its a slippery place, not game session thread will change game state, but game state isn`t prepared for it
+    // solution - add order DISCONNECT - and process it in game session thread
     @Override
     public void onPlayerDisconnect(WebSocketSession session) {
         int playerNum = playerNum(session);

@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+// when i used WebStorm, to start front from another project i had an error with Access-Control-Allow-Origin
+// this class handle such errors, but now its unused, because front and server in one project, but i want to save it
 @Component
 public class CORSFilter implements Filter {
     private final Logger log = LoggerFactory.getLogger(CORSFilter.class);

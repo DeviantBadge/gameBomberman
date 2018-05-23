@@ -1,6 +1,6 @@
 package ru.atom.game.repos;
 
-import ru.atom.game.gamesession.GameSession;
+import ru.atom.game.gamesession.session.GameSession;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,7 +51,7 @@ public class GameSessionRepo {
 
     public void putSessionBack(GameSession session) {
         if (session.isFull()) {
-            // smth
+            /* smth */
         } else {
             notReadySessions.add(session);
         }

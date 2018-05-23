@@ -1,5 +1,6 @@
 package ru.atom.game.socket.util.jsoncheck;
 
+import ru.atom.game.gamesession.properties.GameSessionPropertiesCreator;
 import ru.atom.game.socket.message.response.messagedata.Replica;
 import ru.atom.game.objects.base.interfaces.Replicable;
 import ru.atom.game.objects.base.util.Position;
@@ -11,8 +12,9 @@ import java.util.List;
 
 public class JsonCreationCheck {
 
+    // made this class to check, am i correctly creating Json or not
     public static void main(String[] args) {
-        GameSessionProperties properties = new GameSessionProperties();
+        GameSessionProperties properties = new GameSessionPropertiesCreator().createProperties();
         ObjectCreator creator = new ObjectCreator(properties);
         Position position = new Position(10,20);
         Pawn pawn = creator.createPawn(position);

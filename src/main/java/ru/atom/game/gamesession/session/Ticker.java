@@ -1,4 +1,4 @@
-package ru.atom.game.gamesession;
+package ru.atom.game.gamesession.session;
 
 
 import org.slf4j.LoggerFactory;

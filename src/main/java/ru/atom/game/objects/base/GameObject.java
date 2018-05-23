@@ -10,7 +10,6 @@ import ru.atom.game.enums.ObjectType;
 
 public abstract class GameObject implements Destroyable, Replicable {
     protected final static Logger log = LoggerFactory.getLogger(GameObject.class);
-    // TODO mb its better to give object id from game session
     // TODO make GameObject positionable
     private final Integer id;
     private final ObjectType type;

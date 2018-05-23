@@ -1,4 +1,4 @@
-package ru.atom.game.gamesession;
+package ru.atom.game.gamesession.lists;
 
 import ru.atom.game.objects.orders.Order;
 

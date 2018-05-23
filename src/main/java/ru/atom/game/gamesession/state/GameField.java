@@ -1,5 +1,6 @@
 package ru.atom.game.gamesession.state;
 
+import ru.atom.game.enums.FieldType;
 import ru.atom.game.enums.ObjectType;
 import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;

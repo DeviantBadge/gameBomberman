@@ -1,6 +1,6 @@
 package ru.atom.game.gamesession.properties;
 
-import ru.atom.game.gamesession.state.FieldType;
+import ru.atom.game.enums.FieldType;
 
 public class GameSessionProperties extends GameObjectProperties {
 

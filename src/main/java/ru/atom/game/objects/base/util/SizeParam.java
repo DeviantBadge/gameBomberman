@@ -1,5 +1,6 @@
 package ru.atom.game.objects.base.util;
 
+// wanted to Standardize size parameters
 public class SizeParam {
     public static final int CELL_SIZE_X = 32;
     public static final int CELL_SIZE_Y = 32;

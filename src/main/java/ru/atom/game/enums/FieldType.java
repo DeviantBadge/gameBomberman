@@ -1,4 +1,4 @@
-package ru.atom.game.gamesession.state;
+package ru.atom.game.enums;
 
 public enum  FieldType {
     WARM_UP,
