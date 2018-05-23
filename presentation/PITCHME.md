@@ -1,9 +1,9 @@
 ---
 # Java
 ## Presentation of the final project
-Made by: \
-Vorobyov Evgeniy \
-Udovichenko Danil \
+Made by: 
+Vorobyov Evgeniy 
+Udovichenko Danil 
 Volcovich Maksim
 
 ---
