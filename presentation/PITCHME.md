@@ -28,7 +28,7 @@ Refresh gradle project
 
 ---
 ## Architecture overview
-<img src="lecture09/presentation/assets/img/Bomberman-arch.png" alt="exception" style="width: 900px;"/>
+<img src="presentation/assets/img/Bomberman-arch.png" alt="exception" style="width: 900px;"/>
 
 ---
 ## Game Server
@@ -41,7 +41,7 @@ Game Server is a separate application that do in cycle:
 
 
 ---
-<img src="lecture09/presentation/assets/img/GameServerArchitecture.png" alt="exception" style="width: 900px;"/>
+<img src="presentation/assets/img/GameServerArchitecture.png" alt="exception" style="width: 900px;"/>
 
 ---
 
@@ -70,7 +70,7 @@ Check it out
 
 ---
 ## Fork game client
-<img src="lecture09/presentation/assets/img/client-actions.jpg" alt="exception" style="width: 800px;"/> 
+<img src="presentation/assets/img/client-actions.jpg" alt="exception" style="width: 800px;"/> 
 
 
 ---
