@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class OrderList {
     private final ConcurrentLinkedQueue<Order> orders;
 
-    OrderList() {
+    public OrderList() {
         orders = new ConcurrentLinkedQueue<>();
     }
 

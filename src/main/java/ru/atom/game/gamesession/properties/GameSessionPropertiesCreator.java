@@ -147,6 +147,21 @@ public class GameSessionPropertiesCreator extends GameObjectPropertiesCreator {
         return movingSpeedY;
     }
 
+    // ********************************
+    // Game Field
+    // ********************************
+    private int borderWidth = 1;
+
+    public GameSessionPropertiesCreator setBorderWidth(int borderWidth) {
+        borderWidth = intervalCheck(borderWidth, 0, 3);
+        this.borderWidth = borderWidth;
+        return this;
+    }
+
+    public int getBorderWidth() {
+        return borderWidth;
+    }
+
     // ************************
     // Super methods
     // ************************

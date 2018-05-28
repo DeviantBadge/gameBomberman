@@ -11,6 +11,7 @@ import ru.atom.game.gamesession.properties.GameSessionProperties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameState {
     private static final int X_CELL_SIZE = 32;
@@ -27,9 +28,9 @@ public class GameState {
     public GameState(GameSessionProperties properties, ObjectCreator creator) {
         this.properties = properties;
         this.creator = creator;
-        gameField = new GameField(creator, properties.getFieldSizeX(), properties.getFieldSizeY());
+        gameField = new GameField(creator, properties);
         bombs = new ArrayList<>();
-        pawns = new ArrayList<>();
+        pawns = new CopyOnWriteArrayList<>();
 
         createWarmUpField();
     }

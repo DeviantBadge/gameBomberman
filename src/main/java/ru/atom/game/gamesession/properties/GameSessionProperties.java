@@ -19,6 +19,8 @@ public class GameSessionProperties extends GameObjectProperties {
         speedBonusCoef = creator.getSpeedBonusCoef();
         movingSpeedX = creator.getMovingSpeedX();
         movingSpeedY = creator.getMovingSpeedY();
+
+        borderWidth = creator.getBorderWidth();
     }
 
     // ********************************
@@ -90,5 +92,15 @@ public class GameSessionProperties extends GameObjectProperties {
 
     public double getMovingSpeedY() {
         return movingSpeedY;
+    }
+
+
+    // ********************************
+    // Field
+    // ********************************
+    private final int borderWidth;
+
+    public int getBorderWidth() {
+        return borderWidth;
     }
 }

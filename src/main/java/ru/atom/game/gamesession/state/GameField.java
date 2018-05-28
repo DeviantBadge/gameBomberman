@@ -2,6 +2,7 @@ package ru.atom.game.gamesession.state;
 
 import ru.atom.game.enums.FieldType;
 import ru.atom.game.enums.ObjectType;
+import ru.atom.game.gamesession.properties.GameSessionProperties;
 import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;
 import ru.atom.game.objects.base.interfaces.Replicable;
@@ -22,14 +23,17 @@ public class GameField {
     private List<Position> freePositions;
     private final int sizeX;
     private final int sizeY;
+    private final int borderWidth;
 
     private ObjectCreator creator;
 
-    GameField(ObjectCreator creator, int sizeX, int sizeY) {
+
+    GameField(ObjectCreator creator, GameSessionProperties properties) {
         this.creator = creator;
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
+        this.sizeX = properties.getFieldSizeX();
+        this.sizeY = properties.getFieldSizeY();
         cells = new ArrayList<>();
+        this.borderWidth = properties.getBorderWidth();
 
         initialPositions = new ArrayList<>();
         freePositions = new ArrayList<>();
@@ -64,15 +68,24 @@ public class GameField {
                 cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
                 cells.get(i).add(cell);
 
-                if ((i > 0) && (j > 0) && (i < (sizeX - 1)) && (j < (sizeY - 1))) {
+                if ((i < borderWidth) || (j < borderWidth)
+                        || (i > (sizeX - (1 + borderWidth)))
+                        || (j > (sizeY - (1 + borderWidth)))) {
+                    cell.addObject(creator.createWall(cell.getPosition()));
+                    continue;
+                }
+
+                if ((i > borderWidth) && (j > borderWidth)
+                        && (i < (sizeX - (1 + borderWidth)))
+                        && (j < (sizeY - (1 + borderWidth)))) {
                     cell.addObject(creator.createWood(cell.getPosition()));
                 }
             }
         }
-        generateCommonPlayerPositions();
+        generateCommonPlayerPositions(borderWidth);
     }
 
-    private void createGameFieldLow(/*for example field pattern*/) {
+    private void createGameFieldLow() {
         Cell cell;
         cells.clear();
 
@@ -82,17 +95,30 @@ public class GameField {
                 cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
                 cells.get(i).add(cell);
 
-                if ((i > 0) && (j > 0) && (i < (sizeX - 1)) && (j < (sizeY - 1))) {
-                    if (((i % 2) & (j % 2)) == 1)
-                        cell.addObject(creator.createWall(cell.getPosition()));
+                if ((i < borderWidth) || (j < borderWidth)
+                        || (i > (sizeX - (1 + borderWidth)))
+                        || (j > (sizeY - (1 + borderWidth)))) {
+                    cell.addObject(creator.createWall(cell.getPosition()));
+                    continue;
                 }
-                if ((i > 1) && (i < (sizeX - 2)) || (j > 1) && (j < (sizeY - 2))) {
+
+                if ((i > borderWidth) && (j > borderWidth)
+                        && (i < (sizeX - (1 + borderWidth)))
+                        && (j < (sizeY - (1 + borderWidth)))) {
+                    if (((i % 2) & (j % 2)) == 1) {
+                        cell.addObject(creator.createWall(cell.getPosition()));
+                        continue;
+                    }
+                }
+
+                if ((i > (1 + borderWidth)) && (i < (sizeX - (2 + borderWidth)))
+                        || (j > (1 + borderWidth)) && (j < (sizeY - (2 + borderWidth)))) {
                     if (((i % 2) ^ (j % 2)) == 1)
                         cell.addObject(creator.createWood(cell.getPosition()));
                 }
             }
         }
-        generateCommonPlayerPositions();
+        generateCommonPlayerPositions(borderWidth);
     }
 
     private void createGameFieldHigh() {
@@ -105,23 +131,35 @@ public class GameField {
                 cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
                 cells.get(i).add(cell);
 
-                if ((i > 0) && (i < (sizeX - 1)) || (j > 0) && (j < (sizeY - 1))) {
+                if ((i < borderWidth) || (j < borderWidth)
+                        || (i > (sizeX - (1 + borderWidth)))
+                        || (j > (sizeY - (1 + borderWidth)))) {
+                    cell.addObject(creator.createWall(cell.getPosition()));
+                    continue;
+                }
+
+                if ((i > borderWidth) && (j > borderWidth)
+                        && (i < (sizeX - (1 + borderWidth)))
+                        && (j < (sizeY - (1 + borderWidth)))) {
                     if (((i % 2) & (j % 2)) == 1) {
                         cell.addObject(creator.createWall(cell.getPosition()));
                         continue;
                     }
                 }
-                if ((i > 1) && (i < (sizeX - 2)) || (j > 1) && (j < (sizeY - 2))) {
+
+                if ((i > (1 + borderWidth)) && (i < (sizeX - (2 + borderWidth)))
+                        || (j > (1 + borderWidth)) && (j < (sizeY - (2 + borderWidth)))) {
                     cell.addObject(creator.createWood(cell.getPosition()));
                 }
             }
         }
-        generateCommonPlayerPositions();
+        generateCommonPlayerPositions(borderWidth);
     }
 
     private void createBonusVein() {
         Cell cell;
         cells.clear();
+
         int veinSizeX = Math.max(sizeX, sizeY) / 5;
         int veinSizeY = Math.max(sizeX, sizeY) / 5;
         if ((veinSizeX & 1) != (sizeX & 1))
@@ -137,41 +175,53 @@ public class GameField {
                 cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
                 cells.get(i).add(cell);
 
+                if ((i < borderWidth) || (j < borderWidth)
+                        || (i > (sizeX - (1 + borderWidth)))
+                        || (j > (sizeY - (1 + borderWidth)))) {
+                    cell.addObject(creator.createWall(cell.getPosition()));
+                    continue;
+                }
+
                 if ((i >= veinPosX) && (i < veinPosX + veinSizeX)
                         && (j >= veinPosY) && (j < veinPosY + veinSizeY)) {
                     cell.addObject(creator.createBonus(cell.getPosition(), false));
                     continue;
                 }
-                if ((i > 0) && (i < (sizeX - 1)) || (j > 0) && (j < (sizeY - 1))) {
+
+                if ((i > borderWidth) && (j > borderWidth)
+                        && (i < (sizeX - (1 + borderWidth)))
+                        && (j < (sizeY - (1 + borderWidth)))) {
                     if (((i % 2) & (j % 2)) == 1) {
                         cell.addObject(creator.createWall(cell.getPosition()));
                         continue;
                     }
                 }
-                if ((i > 1) && (i < (sizeX - 2)) || (j > 1) && (j < (sizeY - 2))) {
+
+                if ((i > (1 + borderWidth)) && (i < (sizeX - (2 + borderWidth)))
+                        || (j > (1 + borderWidth)) && (j < (sizeY - (2 + borderWidth)))) {
                     cell.addObject(creator.createWood(cell.getPosition()));
                 }
             }
         }
-        generateCommonPlayerPositions();
+        generateCommonPlayerPositions(1);
     }
 
-    private void generateCommonPlayerPositions() {
+    private void generateCommonPlayerPositions(int borderWidth) {
         initialPositions.clear();
         freePositions.clear();
         for (int i = 0; i < 4; i++) {
             switch (i) {
                 case 0:
-                    initialPositions.add(get(0, 0).getPosition());
+                    initialPositions.add(get(borderWidth, borderWidth).getPosition());
                     break;
                 case 1:
-                    initialPositions.add(get(sizeX - 1, sizeY - 1).getPosition());
+                    initialPositions.add(get(sizeX - (1 + borderWidth), sizeY - (1 + borderWidth) ).getPosition());
                     break;
                 case 2:
-                    initialPositions.add(get(0, sizeY - 1).getPosition());
+                    initialPositions.add(get(borderWidth, sizeY - (1 + borderWidth)).getPosition());
                     break;
                 case 3:
-                    initialPositions.add(get(sizeX - 1, 0).getPosition());
+                    initialPositions.add(get(sizeX - (1 + borderWidth), borderWidth).getPosition());
                     break;
             }
         }
@@ -198,7 +248,6 @@ public class GameField {
         return cells.get(x).get(y);
     }
 
-    // sometimes player will be under field
     public List<Replicable> getFieldReplica() {
         List<Replicable> replicables = new ArrayList<>();
         List<Cell> column;

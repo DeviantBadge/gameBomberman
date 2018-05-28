@@ -1,4 +1,3 @@
-
 var ServerProxy = function () {
     this.handler = {
         'REPLICA': gMessageBroker.handleReplica,

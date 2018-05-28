@@ -8,18 +8,16 @@ var MessageBroker = function () {
         'Bonus': this.handleBonus
     }
 };
-var a = 0;
 
 MessageBroker.prototype.handleReplica = function (msg) {
+    console.log(msg);
     var gameObjects = JSON.parse(msg.data);
-    a ++;
-    // console.log(a);
-    // console.log(msg);
+    console.log(gameObjects);
     gGameEngine.game.gc(gameObjects);
 };
 
 MessageBroker.prototype.handleGameOver = function (msg) {
-    // console.log(msg);
+    gGameEngine.game.serverProxy.socket.close();
     gGameEngine.finishGame(msg.data);
 };
 

@@ -1,30 +1,30 @@
 package ru.atom.game.repos;
 
+import org.apache.catalina.core.ApplicationContext;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Repository;
 import ru.atom.game.gamesession.session.GameSession;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@Repository
 public class GameSessionRepo {
-    private final ConcurrentHashMap<String, Thread> threadList;
     private final ConcurrentHashMap<String, GameSession> allSessions;
     private final ConcurrentLinkedQueue<GameSession> notReadySessions;
 
-    private static GameSessionRepo instance;
+    @Autowired
+    private ThreadPoolTaskExecutor executor;
 
-    static {
-        instance = new GameSessionRepo();
-    }
+    @Autowired
+    private BeanFactory beans;
 
-    public static GameSessionRepo getInstance() {
-        return instance;
-    }
-
-    private GameSessionRepo() {
+    protected GameSessionRepo() {
         allSessions = new ConcurrentHashMap<>();
         notReadySessions = new ConcurrentLinkedQueue<>();
-        threadList = new ConcurrentHashMap<>();
     }
 
     public GameSession getSession(String id) {
@@ -32,12 +32,10 @@ public class GameSessionRepo {
     }
 
     protected GameSession createSession(GameSessionProperties properties) {
-        GameSession session = new GameSession(properties);
-        Thread game = new Thread(session);
+        GameSession session = beans.getBean(GameSession.class, properties);
 
         allSessions.put(session.getId().toString(), session);
-        threadList.put(session.getId().toString(), game);
-        game.start();
+        executor.execute(session);
         return session;
     }
 
@@ -59,11 +57,10 @@ public class GameSessionRepo {
 
     @Override
     public String toString() {
-        return threadList.size() + "   " + allSessions.size() + "   " + notReadySessions.size() + "   ";
+        return allSessions.size() + "   " + notReadySessions.size() + "   ";
     }
 
     public void endGame(GameSession session) {
-        threadList.remove(session.getId().toString());
         allSessions.remove(session.getId().toString());
     }
 }

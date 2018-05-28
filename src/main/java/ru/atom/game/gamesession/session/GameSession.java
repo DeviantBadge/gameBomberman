@@ -2,6 +2,9 @@ package ru.atom.game.gamesession.session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 import ru.atom.game.enums.Direction;
 import ru.atom.game.enums.MessageType;
@@ -32,10 +35,11 @@ import java.util.List;
 
 // TODO move some functions to super, such as addOrder, act and so on (make another class mb OnlineSession that is abstract)
 public class GameSession extends OnlineSession {
-
     private static final Logger log = LoggerFactory.getLogger(GameSession.class);
 
-    private GameSessionRepo sessionRepo = GameSessionRepo.getInstance();
+    @Autowired
+    private GameSessionRepo sessionRepo;
+
     private Mover mover;
 
     private GameState gameState;
@@ -51,6 +55,8 @@ public class GameSession extends OnlineSession {
     //TODO mb add something like game type - deathMatch singleLife - or it could be made by properties but how ?
 
     // TODO i dont know how, but part of this code we have to move to another class
+
+    // TODO when player disconnects, we have to remember his state and if he reconnects, we check if his sessions are active or not
 
     public GameSession(GameSessionProperties properties) {
         super(properties.getMaxPlayerAmount());
@@ -204,9 +210,8 @@ public class GameSession extends OnlineSession {
     private void onPlayerDeath(Pawn object) {
         String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU DIED"));
         int playerNum = gameState.playerNum(object);
-        sendTo(gameState.playerNum(object), message);
+        sendTo(playerNum, message);
         SessionsList.unfastenSessionWithGame(getPlayersSocket(playerNum));
-        closeSession(playerNum);
     }
 
     private void sendReplica() {
@@ -312,6 +317,7 @@ public class GameSession extends OnlineSession {
             if (!pawn.isAlive())
                 continue;
             if (pawn.isMoving()) {
+                pawn.setMoved(true);
                 Position newPosition = mover.move(pawn, ms);
                 newPosition = gameState.checkFieldBorders(newPosition);
                 Cell prevCell = gameState.get(pawn.getPosition().getCenter());
@@ -408,8 +414,8 @@ public class GameSession extends OnlineSession {
         gameState.addPlayer();
     }
 
-    // TODO its a slippery place, not game session thread will change game state, but game state isn`t prepared for it
-    // solution - add order DISCONNECT - and process it in game session thread
+    // TODO надо четко определить фукционирование и области действия классов, один удаляет сокеты, другой не имеет права с ними работать
+    // TODO третий наоборот все делает с сокетами а первым двум только позволяет произвести какие то действия (реакция на событие, не больше)
     @Override
     public void onPlayerDisconnect(WebSocketSession session) {
         int playerNum = playerNum(session);
@@ -428,6 +434,5 @@ public class GameSession extends OnlineSession {
     @Override
     protected void stop() {
         super.stop();
-        sessionRepo.endGame(this);
     }
 }

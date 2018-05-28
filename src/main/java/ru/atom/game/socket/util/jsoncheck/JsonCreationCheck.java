@@ -1,6 +1,8 @@
 package ru.atom.game.socket.util.jsoncheck;
 
+import ru.atom.game.enums.MessageType;
 import ru.atom.game.gamesession.properties.GameSessionPropertiesCreator;
+import ru.atom.game.socket.message.response.OutgoingMessage;
 import ru.atom.game.socket.message.response.messagedata.Replica;
 import ru.atom.game.objects.base.interfaces.Replicable;
 import ru.atom.game.objects.base.util.Position;
@@ -48,10 +50,9 @@ public class JsonCreationCheck {
         System.out.println(JsonHelper.toJson(fire));
         System.out.println(JsonHelper.toJson(wall));
         System.out.println(JsonHelper.toJson(wood));
-        System.out.println(JsonHelper.toJson(replica));
 
-        replica.addAllToReplica(replicables);
-        System.out.println(JsonHelper.toJson(replica.toString()));
+        OutgoingMessage message = new OutgoingMessage(MessageType.REPLICA, replica.toString());
+        System.out.println(JsonHelper.toJson(message));
 
         replica.addAllToReplica(replicables);
         System.out.println(replica.toString());

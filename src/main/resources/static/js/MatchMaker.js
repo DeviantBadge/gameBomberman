@@ -20,7 +20,6 @@ MatchMaker.prototype.getSessionId = function () {
         sessionId = id;
         console.log("This lobby id - " + id);
     }).fail(function (jqXHR, textStatus) {
-        alert(jqXHR);
         alert("Matchmaker request failed");
     });
 

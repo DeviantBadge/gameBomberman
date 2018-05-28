@@ -6,6 +6,7 @@ import ru.atom.game.gamesession.lists.PlayersList;
 import ru.atom.game.socket.message.request.IncomingMessage;
 import ru.atom.game.objects.base.util.IdGen;
 import ru.atom.game.objects.orders.Order;
+import ru.atom.game.socket.util.SessionsList;
 
 public abstract class OnlineSession extends Ticker {
     private static final IdGen idGen = new IdGen();
@@ -100,6 +101,7 @@ public abstract class OnlineSession extends Ticker {
 
     public void addPlayer(String name) {
         // TODO adding player here, then checking it while player connecting to room
+        // TODO have we add player DATA from data base here or not?
         createNewPlayer(name);
     }
 
