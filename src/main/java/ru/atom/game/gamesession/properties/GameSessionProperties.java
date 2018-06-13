@@ -15,6 +15,7 @@ public class GameSessionProperties extends GameObjectProperties {
         blowStopsOnWall = creator.isBlowStopsOnWall();
         bombBlowAsOne = creator.isBombBlowAsOne();
         additiveBombRadius = creator.isAdditiveBombRadius();
+        ranked = creator.isRanked();
 
         speedBonusCoef = creator.getSpeedBonusCoef();
         movingSpeedX = creator.getMovingSpeedX();
@@ -32,6 +33,7 @@ public class GameSessionProperties extends GameObjectProperties {
 
     private final int fieldSizeX;
     private final int fieldSizeY;
+    private final boolean ranked;
 
     public int getMaxPlayerAmount() {
         return maxPlayerAmount;
@@ -51,6 +53,10 @@ public class GameSessionProperties extends GameObjectProperties {
 
     public int getFieldSizeY() {
         return fieldSizeY;
+    }
+
+    public boolean isRanked() {
+        return ranked;
     }
 
     // ********************************

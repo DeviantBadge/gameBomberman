@@ -1,8 +1,9 @@
 package ru.atom.game.objects.ingame;
 
+import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;
 import ru.atom.game.objects.base.util.IdGen;
-import ru.atom.game.objects.base.util.Position;
+import ru.atom.game.objects.base.util.Point;
 import ru.atom.game.gamesession.properties.GameObjectProperties;
 
 public class ObjectCreator {
@@ -14,46 +15,51 @@ public class ObjectCreator {
         idGen = new IdGen(false);
     }
 
-    public Bomb createBomb(Position position, Pawn owner) {
-        return new Bomb(idGen.generateId(), position, owner, properties.getBombBlowTimeMs());
+    public Bomb createBomb(Point point, Pawn owner) {
+        return new Bomb(idGen.generateId(), point, owner, properties.getBombBlowTimeMs(), true);
     }
 
-    public Bonus createBonus(Position position, boolean considerProbability) {
+    public Bonus createBonus(Point point, boolean considerProbability) {
         double bonusCast = Math.random();
         double bonusTypeCast = Math.random();
         if (!considerProbability || bonusCast < properties.getBonusProbability()) {
             if (bonusTypeCast < properties.getSpeedProbability())
-                return new Bonus(idGen.generateId(), position, Bonus.BonusType.SPEED);
+                return new Bonus(idGen.generateId(), point, Bonus.BonusType.SPEED, false);
             else
                 bonusTypeCast -= properties.getSpeedProbability();
             if (bonusTypeCast < properties.getBombsProbability())
-                return new Bonus(idGen.generateId(), position, Bonus.BonusType.BOMBS);
-            return new Bonus(idGen.generateId(), position, Bonus.BonusType.RANGE);
+                return new Bonus(idGen.generateId(), point, Bonus.BonusType.BOMBS, false);
+            return new Bonus(idGen.generateId(), point, Bonus.BonusType.RANGE, false);
         }
         return null;
     }
 
-    public Bonus createBonus(Position position, Bonus.BonusType type) {
-        return new Bonus(idGen.generateId(), position, type);
+    public Bonus createBonus(Point point, Bonus.BonusType type) {
+        return new Bonus(idGen.generateId(), point, type, false);
     }
 
-    public Fire createFire(Position position) {
-        return new Fire(idGen.generateId(), position);
+    public Fire createFire(Point point) {
+        return new Fire(idGen.generateId(), point, false);
     }
 
-    public Pawn createPawn(Position position) {
-        return new Pawn(idGen.generateId(), position,
+    // todo add some property params
+    public Pawn createPawn(Point point) {
+        return new Pawn(idGen.generateId(), point,
+                new Point(Cell.CELL_SIZE_X / 4, Cell.CELL_SIZE_Y / 4),
+                Cell.CELL_SIZE_X / 2,
+                Cell.CELL_SIZE_Y / 2,
+                false, /* поставить параметр из пропертей */
                 properties.getRangeOnStart(),
                 properties.getBombsOnStart(),
                 properties.getSpeedOnStart());
     }
 
-    public Wall createWall(Position position) {
-        return new Wall(idGen.generateId(), position);
+    public Wall createWall(Point point) {
+        return new Wall(idGen.generateId(), point, true);
     }
 
-    public Wood createWood(Position position) {
-        return new Wood(idGen.generateId(), position);
+    public Wood createWood(Point point) {
+        return new Wood(idGen.generateId(), point, true);
     }
 
 

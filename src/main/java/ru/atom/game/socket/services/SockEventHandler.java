@@ -28,6 +28,7 @@ public class SockEventHandler extends TextWebSocketHandler {
         super.afterConnectionEstablished(session);
         SessionsList.addSession(session);
         log.info("Socket Connected: " + session);
+        // TODO login here (Ask, its good to login here or not Hmmmm)
     }
 
     @Override

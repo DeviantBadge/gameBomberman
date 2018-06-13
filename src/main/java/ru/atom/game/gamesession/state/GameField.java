@@ -6,7 +6,7 @@ import ru.atom.game.gamesession.properties.GameSessionProperties;
 import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;
 import ru.atom.game.objects.base.interfaces.Replicable;
-import ru.atom.game.objects.base.util.Position;
+import ru.atom.game.objects.base.util.Point;
 import ru.atom.game.objects.ingame.ObjectCreator;
 
 import java.util.ArrayList;
@@ -19,8 +19,8 @@ public class GameField {
     // TODO make another class Field, create it by patterns (it will create by creator)
     // TODO if we want to add new maps we add it here, but i think we could do it better
     private final List<List<Cell>> cells;
-    private List<Position> initialPositions;
-    private List<Position> freePositions;
+    private List<Point> initialPoints;
+    private List<Point> freePoints;
     private final int sizeX;
     private final int sizeY;
     private final int borderWidth;
@@ -35,8 +35,8 @@ public class GameField {
         cells = new ArrayList<>();
         this.borderWidth = properties.getBorderWidth();
 
-        initialPositions = new ArrayList<>();
-        freePositions = new ArrayList<>();
+        initialPoints = new ArrayList<>();
+        freePoints = new ArrayList<>();
     }
 
     public void createField(FieldType type) {
@@ -65,7 +65,7 @@ public class GameField {
         for (int i = 0; i < sizeX; i++) {
             cells.add(new ArrayList<>());
             for (int j = 0; j < sizeY; j++) {
-                cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
+                cell = new Cell(new Point(i * X_CELL_SIZE, j * Y_CELL_SIZE));
                 cells.get(i).add(cell);
 
                 if ((i < borderWidth) || (j < borderWidth)
@@ -92,7 +92,7 @@ public class GameField {
         for (int i = 0; i < sizeX; i++) {
             cells.add(new ArrayList<>());
             for (int j = 0; j < sizeY; j++) {
-                cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
+                cell = new Cell(new Point(i * X_CELL_SIZE, j * Y_CELL_SIZE));
                 cells.get(i).add(cell);
 
                 if ((i < borderWidth) || (j < borderWidth)
@@ -128,7 +128,7 @@ public class GameField {
         for (int i = 0; i < sizeX; i++) {
             cells.add(new ArrayList<>());
             for (int j = 0; j < sizeY; j++) {
-                cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
+                cell = new Cell(new Point(i * X_CELL_SIZE, j * Y_CELL_SIZE));
                 cells.get(i).add(cell);
 
                 if ((i < borderWidth) || (j < borderWidth)
@@ -172,7 +172,7 @@ public class GameField {
         for (int i = 0; i < sizeX; i++) {
             cells.add(new ArrayList<>());
             for (int j = 0; j < sizeY; j++) {
-                cell = new Cell(new Position(i * X_CELL_SIZE, j * Y_CELL_SIZE));
+                cell = new Cell(new Point(i * X_CELL_SIZE, j * Y_CELL_SIZE));
                 cells.get(i).add(cell);
 
                 if ((i < borderWidth) || (j < borderWidth)
@@ -207,33 +207,33 @@ public class GameField {
     }
 
     private void generateCommonPlayerPositions(int borderWidth) {
-        initialPositions.clear();
-        freePositions.clear();
+        initialPoints.clear();
+        freePoints.clear();
         for (int i = 0; i < 4; i++) {
             switch (i) {
                 case 0:
-                    initialPositions.add(get(borderWidth, borderWidth).getPosition());
+                    initialPoints.add(get(borderWidth, borderWidth).getPosition());
                     break;
                 case 1:
-                    initialPositions.add(get(sizeX - (1 + borderWidth), sizeY - (1 + borderWidth) ).getPosition());
+                    initialPoints.add(get(sizeX - (1 + borderWidth), sizeY - (1 + borderWidth) ).getPosition());
                     break;
                 case 2:
-                    initialPositions.add(get(borderWidth, sizeY - (1 + borderWidth)).getPosition());
+                    initialPoints.add(get(borderWidth, sizeY - (1 + borderWidth)).getPosition());
                     break;
                 case 3:
-                    initialPositions.add(get(sizeX - (1 + borderWidth), borderWidth).getPosition());
+                    initialPoints.add(get(sizeX - (1 + borderWidth), borderWidth).getPosition());
                     break;
             }
         }
-        freePositions.addAll(initialPositions);
+        freePoints.addAll(initialPoints);
     }
 
-    Position getRandomStartPos() {
-        if (freePositions.size() == 0) {
-            freePositions.addAll(initialPositions);
+    Point getRandomStartPos() {
+        if (freePoints.size() == 0) {
+            freePoints.addAll(initialPoints);
         }
-        int num = ((int) (freePositions.size() * Math.random()));
-        return freePositions.remove(num);
+        int num = ((int) (freePoints.size() * Math.random()));
+        return freePoints.remove(num);
     }
 
     public int getSizeX() {

@@ -1,10 +1,11 @@
 package ru.atom.game.gamesession.state;
 
+import ru.atom.game.objects.base.GameObject;
+import ru.atom.game.objects.base.util.CellsSpace;
 import ru.atom.game.objects.ingame.ObjectCreator;
 import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.interfaces.Replicable;
-import ru.atom.game.objects.base.util.Position;
-import ru.atom.game.objects.base.util.SizeParam;
+import ru.atom.game.objects.base.util.Point;
 import ru.atom.game.objects.ingame.Bomb;
 import ru.atom.game.objects.ingame.Pawn;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
@@ -14,8 +15,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameState {
-    private static final int X_CELL_SIZE = 32;
-    private static final int Y_CELL_SIZE = 32;
 
     private final List<Bomb> bombs;
     private final List<Pawn> pawns;
@@ -64,11 +63,18 @@ public class GameState {
     }
 
     public void addPlayer() {
-        Position playerPos = gameField.getRandomStartPos();
+        Point playerPos = gameField.getRandomStartPos();
         Pawn player = creator.createPawn(playerPos);
+
         pawns.add(player);
         get(playerPos).addObject(player);
     }
+
+    // TODO public void addPlayerToCell(Pawn player, Cell cell) ;
+
+    // TODO public void removePlayerFromCell(Pawn player, Cell cell);
+
+
 
     public List<Bomb> getBombs() {
         return bombs;
@@ -76,30 +82,31 @@ public class GameState {
 
     public void addBomb(Bomb bomb) {
         bombs.add(bomb);
-        Cell cell = get(bomb.getPosition());
+        Cell cell = get(bomb.getCenter());
         bomb.setPosition(cell.getPosition());
         cell.addObject(bomb);
     }
 
-    public Position checkFieldBorders(Position newPosition) {
-        double x = newPosition.getX(), y = newPosition.getY();
-        if (newPosition.getX() < 0)
+    public Point checkFieldBorders(Point newPoint) {
+        double x = newPoint.getX(), y = newPoint.getY();
+        if (newPoint.getX() < 0)
             x = 0;
-        if (newPosition.getY() < 0)
+        if (newPoint.getY() < 0)
             y = 0;
-        if (newPosition.getX() + SizeParam.CELL_SIZE_X > getSizeX() * X_CELL_SIZE)
-            x = getSizeX() * X_CELL_SIZE - SizeParam.CELL_SIZE_X;
-        if (newPosition.getY() + SizeParam.CELL_SIZE_Y > getSizeY() * Y_CELL_SIZE)
-            y = getSizeY() * Y_CELL_SIZE - SizeParam.CELL_SIZE_Y;
-        return new Position(x, y);
+        if (newPoint.getX() + Cell.CELL_SIZE_X > getSizeX() * Cell.CELL_SIZE_X)
+            x = getSizeX() * Cell.CELL_SIZE_X - Cell.CELL_SIZE_X;
+        if (newPoint.getY() + Cell.CELL_SIZE_Y > getSizeY() * Cell.CELL_SIZE_Y)
+            y = getSizeY() * Cell.CELL_SIZE_Y - Cell.CELL_SIZE_Y;
+        return new Point(x, y);
     }
 
     public Cell get(int x, int y) {
         return gameField.get(x, y);
     }
 
-    public Cell get(Position position) {
-        return get(position.getIntX() / X_CELL_SIZE, position.getIntY() / Y_CELL_SIZE);
+    public Cell get(Point point) {
+        return get((int) (point.getIntX() / Cell.CELL_SIZE_X),
+                (int) (point.getIntY() / Cell.CELL_SIZE_Y));
     }
 
     public int getSizeX() {
@@ -138,5 +145,9 @@ public class GameState {
     // sometimes player will be under field
     public List<Replicable> getFieldReplica() {
         return gameField.getFieldReplica();
+    }
+
+    public void removeObject(GameObject object) {
+        get(object.getCenter()).removeObject(object);
     }
 }

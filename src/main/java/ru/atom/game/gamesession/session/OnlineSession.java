@@ -18,6 +18,7 @@ public abstract class OnlineSession extends Ticker {
     private int max;
 
     public OnlineSession(int maxPlayerAmount){
+        super(60);
         id = idGen.generateId();
 
         playersList = new PlayersList(maxPlayerAmount);

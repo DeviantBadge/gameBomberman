@@ -1,9 +1,10 @@
 package ru.atom.game.objects.ingame;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;
 import ru.atom.game.objects.base.interfaces.Ticking;
-import ru.atom.game.objects.base.util.Position;
+import ru.atom.game.objects.base.util.Point;
 import ru.atom.game.enums.ObjectType;
 
 public class Bomb extends GameObject implements Ticking {
@@ -14,8 +15,8 @@ public class Bomb extends GameObject implements Ticking {
     @JsonIgnore
     private long timeLeft;
 
-    Bomb(Integer id, Position position, Pawn owner, long loopTime) {
-        super(id, ObjectType.Bomb, position);
+    Bomb(Integer id, Point point, Pawn owner, long loopTime, boolean blocking) {
+        super(id, ObjectType.Bomb, point, new Point(0,0), Cell.CELL_SIZE_X, Cell.CELL_SIZE_Y, blocking);
         this.owner = owner;
         this.loopTime = loopTime;
         this.timeLeft = loopTime;

@@ -3,33 +3,37 @@ package ru.atom.game.objects.base;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.atom.game.enums.ObjectType;
-import ru.atom.game.objects.base.util.Position;
+import ru.atom.game.objects.base.util.Frame;
+import ru.atom.game.objects.base.util.Point;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Cell {
     private static final Logger log = LoggerFactory.getLogger(Cell.class);
+    public static final double CELL_SIZE_X = 32;
+    public static final double CELL_SIZE_Y = 32;
     private final List<GameObject> objects = new ArrayList<>();
-    private Position position;
+    private Point point;
 
 
-    public Cell(Position position) {
-        this.position = position;
+    public Cell(Point point) {
+        this.point = point;
     }
 
     // TODO mb it isnt good to do such things :3
     public void addObject(GameObject object) {
         if (!objects.contains(object)) {
             objects.add(object);
-        } else
-            log.warn("You trying to add existing object to cell");
+        } else {
+            log.warn("You trying to add existing object to cell, object type " + object.getType());
+        }
 
         if (object.getType() != ObjectType.Pawn) {
-            if(!position.equals(object.getPosition())) {
+            if(!point.equals(object.getPosition())) {
                 log.warn("Incorrect object position, it must be equals to cell position");
             }
-            object.setPosition(position);
+            object.setPosition(point);
         }
 
     }
@@ -54,17 +58,17 @@ public class Cell {
         return objects;
     }
 
-    public Position getPosition() {
-        return position;
+    public Point getPosition() {
+        return point;
     }
 
-    public boolean contains(Position objectPosition) {
-        Position center = objectPosition.getCenter();
+    public boolean contains(Frame objectPoint) {
+        Point center = objectPoint.getCenter();
 
-        return  (center.getX() < position.getX() + 32) &&
-                (center.getX() >= position.getX()) &&
-                (center.getY() < position.getY() + 32) &&
-                (center.getY() >= position.getY());
+        return  (center.getX() < point.getX() + CELL_SIZE_X) &&
+                (center.getX() >= point.getX()) &&
+                (center.getY() < point.getY() + CELL_SIZE_Y) &&
+                (center.getY() >= point.getY());
     }
 
     public void deleteDestroyed() {

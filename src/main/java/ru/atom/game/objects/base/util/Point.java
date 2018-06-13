@@ -7,19 +7,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.atom.game.socket.message.request.messagedata.InGameMovement;
 
-public class Position {
-    private static Logger log = LoggerFactory.getLogger(InGameMovement.class);
+public class Point {
     private final Double x;
     private final Double y;
 
-    public Position(double x, double y) {
+    public Point(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    public Position(@NotNull Position position) {
-        this.x = position.x;
-        this.y = position.y;
+    public Point(@NotNull Point point) {
+        this.x = point.x;
+        this.y = point.y;
     }
 
     @JsonGetter("x")
@@ -55,18 +54,10 @@ public class Position {
         if (this == anObject) {
             return true;
         }
-        if (anObject instanceof Position) {
-            Position pos = (Position) anObject;
+        if (anObject instanceof Point) {
+            Point pos = (Point) anObject;
             return pos.x.equals(this.x) && pos.y.equals(this.y);
         }
         return false;
-    }
-
-    @JsonIgnore
-    public Position getCenter() {
-        return new Position(
-                getX() + SizeParam.CELL_SIZE_X / 2,
-                getY() + SizeParam.CELL_SIZE_Y / 2
-        );
     }
 }

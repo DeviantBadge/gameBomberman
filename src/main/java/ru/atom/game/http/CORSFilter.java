@@ -1,4 +1,4 @@
-package ru.atom.game;
+package ru.atom.game.http;
 
 import java.io.IOException;
 import javax.servlet.Filter;

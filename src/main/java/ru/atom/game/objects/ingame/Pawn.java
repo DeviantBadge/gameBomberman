@@ -3,9 +3,13 @@ package ru.atom.game.objects.ingame;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import ru.atom.game.enums.Direction;
+import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;
-import ru.atom.game.objects.base.util.Position;
+import ru.atom.game.objects.base.util.CellsSpace;
+import ru.atom.game.objects.base.util.Point;
 import ru.atom.game.enums.ObjectType;
+
+import java.util.ArrayList;
 
 public class Pawn extends GameObject {
     private Direction direction;
@@ -14,15 +18,16 @@ public class Pawn extends GameObject {
     private boolean moved = false;
 
     // BONUSES
-    private int blowRange = 1;
-    private int maxBombAmount = 1;
-    private int speedBonus = 0;
+    private int blowRange;
+    private int maxBombAmount;
+    private int speedBonus;
 
     // BOMBS
     private int bombCount = 0;
 
-    Pawn(Integer id, Position position, int blowRange, int maxBombAmount, int speedBonus) {
-        super(id, ObjectType.Pawn, position);
+    Pawn(Integer id, Point point, Point colliderShift, Double colSizeX, Double colSizeY, boolean blocking,
+         int blowRange, int maxBombAmount, int speedBonus) {
+        super(id, ObjectType.Pawn, point, colliderShift, colSizeX, colSizeY, blocking);
         this.blowRange = blowRange;
         this.maxBombAmount = maxBombAmount;
         this.speedBonus = speedBonus;

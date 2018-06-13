@@ -8,25 +8,35 @@ import java.util.concurrent.locks.LockSupport;
 
 public abstract class Ticker implements Runnable {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Ticker.class);
-    private static final int FPS = 60;
-    private static final long FRAME_TIME = 1000 / FPS;
+
+    private final long FRAME_TIME;
 
     private long pastLoopStarted;
     private long tickNumber = 0;
     private boolean stopped = false;
 
-    public Ticker() {
+    public Ticker(int FPS) {
+        this.FRAME_TIME = 1000 / FPS;
+        pastLoopStarted = System.currentTimeMillis();
+    }
+
+    public void initialise() {
         pastLoopStarted = System.currentTimeMillis();
     }
 
     @Override
     final public void run() {
-        while (!Thread.currentThread().isInterrupted() && !isStopped()) {
+        while (!Thread.currentThread().isInterrupted()) {
             long started = System.currentTimeMillis();
             long delta = started - pastLoopStarted;
-            // System.out.println(delta);
             pastLoopStarted = started;
+
+            // So small, but so heavy
             act(delta);
+
+            if(isStopped())
+                break;
+
             long elapsed = System.currentTimeMillis() - started;
             if (elapsed < FRAME_TIME) {
                 // log.info("All tick finish at {} ms", elapsed);
@@ -42,17 +52,29 @@ public abstract class Ticker implements Runnable {
 
     protected abstract void onStop();
 
-    public boolean isStopped() {
-        return stopped;
-    }
-
     protected void stop() {
         stopped = true;
     }
 
     protected abstract void act(long timeFromPastLoop);
 
+    public boolean isStopped() {
+        return stopped;
+    }
+
     public long getTickNumber() {
         return tickNumber;
+    }
+
+    public long getPastLoopStarted() {
+        return pastLoopStarted;
+    }
+
+    public long getFRAME_TIME() {
+        return FRAME_TIME;
+    }
+
+    public void incTickAmount() {
+        tickNumber ++;
     }
 }

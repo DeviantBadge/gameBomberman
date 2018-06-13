@@ -9,6 +9,7 @@ import ru.atom.game.socket.message.request.messagedata.Name;
 import ru.atom.game.socket.util.JsonHelper;
 
 // приказ
+// Если буду реализовывать чат, то надо будет работу ордера пересмотреть, плюс то что он хранит столько всего мне не в кайф
 public class Order {
     private int playerNum;
     private IncomingTopic incomingTopic;

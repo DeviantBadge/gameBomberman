@@ -17,6 +17,7 @@ public class GameSessionPropertiesCreator extends GameObjectPropertiesCreator {
 
     private int fieldSizeX = 27;
     private int fieldSizeY = 17;
+    private boolean ranked = false;
 
     public GameSessionPropertiesCreator setMaxPlayerAmount(int maxPlayerAmount) {
         maxPlayerAmount = intervalCheck(maxPlayerAmount, 2, 4);
@@ -46,6 +47,11 @@ public class GameSessionPropertiesCreator extends GameObjectPropertiesCreator {
         return this;
     }
 
+    public GameSessionPropertiesCreator setRanked(boolean ranked) {
+        this.ranked = ranked;
+        return this;
+    }
+
     public int getMaxPlayerAmount() {
         return maxPlayerAmount;
     }
@@ -64,6 +70,10 @@ public class GameSessionPropertiesCreator extends GameObjectPropertiesCreator {
 
     public int getFieldSizeY() {
         return fieldSizeY;
+    }
+
+    public boolean isRanked() {
+        return ranked;
     }
 
     // ********************************

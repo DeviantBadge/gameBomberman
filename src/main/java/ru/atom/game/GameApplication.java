@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.atom.game.databases.player.PlayerData;
 import ru.atom.game.databases.player.PlayerDataRepository;
@@ -33,6 +34,11 @@ public class GameApplication {
         pool.setWaitForTasksToCompleteOnShutdown(true);
         pool.initialize();
         return pool;
+    }
+
+    @Bean
+    public SimpleAsyncTaskExecutor taskExe() {
+        return new SimpleAsyncTaskExecutor();
     }
 
     @Bean

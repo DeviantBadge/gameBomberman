@@ -2,6 +2,7 @@ package ru.atom.game.gamesession.properties;
 
 public class GameObjectProperties {
 
+    // TODO add blocking parameters, player colliding frame size
     GameObjectProperties(GameObjectPropertiesCreator creator) {
         bombBlowTimeMs = creator.getBombBlowTimeMs();
 

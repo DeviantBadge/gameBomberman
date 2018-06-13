@@ -3,6 +3,7 @@ package ru.atom.game.repos;
 import org.apache.catalina.core.ApplicationContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Repository;
 import ru.atom.game.gamesession.session.GameSession;
@@ -14,24 +15,34 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Repository
 public class GameSessionRepo {
     private final ConcurrentHashMap<String, GameSession> allSessions;
-    private final ConcurrentLinkedQueue<GameSession> notReadySessions;
 
-    @Autowired
-    private ThreadPoolTaskExecutor executor;
 
-    @Autowired
+    // TODO Решить что делать с этим парнем, жду ответа Александра
+    // TODO Решили, делаем свой пул, который будет переключаться между процессами
+    // Но для начала поищи, может быть есть на Ко-рутине уже библиотечки
+    private SimpleAsyncTaskExecutor executor;
+
     private BeanFactory beans;
+
+    @Autowired
+    private void setExecutor(SimpleAsyncTaskExecutor executor) {
+        this.executor = executor;
+    }
+
+    @Autowired
+    private void setBeans(BeanFactory beans) {
+        this.beans = beans;
+    }
 
     protected GameSessionRepo() {
         allSessions = new ConcurrentHashMap<>();
-        notReadySessions = new ConcurrentLinkedQueue<>();
     }
 
     public GameSession getSession(String id) {
         return allSessions.get(id);
     }
 
-    protected GameSession createSession(GameSessionProperties properties) {
+    public GameSession createSession(GameSessionProperties properties) {
         GameSession session = beans.getBean(GameSession.class, properties);
 
         allSessions.put(session.getId().toString(), session);
@@ -39,25 +50,9 @@ public class GameSessionRepo {
         return session;
     }
 
-    public GameSession pollOrCreateSession(GameSessionProperties properties) {
-        GameSession session = notReadySessions.poll();
-        if(session==null) {
-            return createSession(properties);
-        }
-        return session;
-    }
-
-    public void putSessionBack(GameSession session) {
-        if (session.isFull()) {
-            /* smth */
-        } else {
-            notReadySessions.add(session);
-        }
-    }
-
     @Override
     public String toString() {
-        return allSessions.size() + "   " + notReadySessions.size() + "   ";
+        return allSessions.size() + "";
     }
 
     public void endGame(GameSession session) {

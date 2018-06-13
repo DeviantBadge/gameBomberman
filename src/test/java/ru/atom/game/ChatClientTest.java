@@ -6,6 +6,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.atom.game.objects.base.util.ColliderFrame;
+import ru.atom.game.objects.base.util.Point;
 
 import java.io.IOException;
 
@@ -18,6 +20,32 @@ public class ChatClientTest {
     private static String MY_MESSAGE_TO_CHAT = "KILL_ME_SOMEONE";
     private static String MY_PASSWORD = "1234";
 
+
+    /*
+    public static void main1(String[] args) {
+        ColliderFrame frame1;
+        ColliderFrame frame2;
+        frame1 = new ColliderFrame(new Point(0,0), 100d, 100d, new Point(0,0));
+        frame2 = new ColliderFrame(new Point(0,0), 100d, 100d, new Point(0,0));
+        System.out.println(frame1.collide(frame2));
+
+        frame1 = new ColliderFrame(new Point(0,0), 100d, 100d, new Point(0,0));
+        frame2 = new ColliderFrame(new Point(100d,100d), 100d, 100d, new Point(0,0));
+        System.out.println(frame1.collide(frame2));
+
+        frame1 = new ColliderFrame(new Point(0,0), 100d, 100d, new Point(0,0));
+        frame2 = new ColliderFrame(new Point(0,0), 50d, 60d, new Point(0,0));
+        System.out.println(frame1.collide(frame2));
+
+        frame1 = new ColliderFrame(new Point(50,0), 100d, 100d, new Point(0,0));
+        frame2 = new ColliderFrame(new Point(0,50), 100d, 100d, new Point(0,0));
+        System.out.println(frame1.collide(frame2));
+
+        frame1 = new ColliderFrame(new Point(50,0), 10d, 10d, new Point(0,0));
+        frame2 = new ColliderFrame(new Point(0,50), 10d, 10d, new Point(0,0));
+        System.out.println(frame1.collide(frame2));
+    }
+    */
 
 
     @Test

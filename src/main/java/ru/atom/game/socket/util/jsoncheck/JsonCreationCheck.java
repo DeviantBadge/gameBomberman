@@ -5,7 +5,7 @@ import ru.atom.game.gamesession.properties.GameSessionPropertiesCreator;
 import ru.atom.game.socket.message.response.OutgoingMessage;
 import ru.atom.game.socket.message.response.messagedata.Replica;
 import ru.atom.game.objects.base.interfaces.Replicable;
-import ru.atom.game.objects.base.util.Position;
+import ru.atom.game.objects.base.util.Point;
 import ru.atom.game.objects.ingame.*;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
 import ru.atom.game.socket.util.JsonHelper;
@@ -18,15 +18,15 @@ public class JsonCreationCheck {
     public static void main(String[] args) {
         GameSessionProperties properties = new GameSessionPropertiesCreator().createProperties();
         ObjectCreator creator = new ObjectCreator(properties);
-        Position position = new Position(10,20);
-        Pawn pawn = creator.createPawn(position);
-        Bomb bomb = creator.createBomb(position, pawn);
-        Bonus bonus1 = creator.createBonus(position, Bonus.BonusType.BOMBS);
-        Bonus bonus2 = creator.createBonus(position, Bonus.BonusType.SPEED);
-        Bonus bonus3 = creator.createBonus(position, Bonus.BonusType.RANGE);
-        Fire fire = creator.createFire(position);
-        Wall wall = creator.createWall(position);
-        Wood wood = creator.createWood(position);
+        Point point = new Point(10,20);
+        Pawn pawn = creator.createPawn(point);
+        Bomb bomb = creator.createBomb(point, pawn);
+        Bonus bonus1 = creator.createBonus(point, Bonus.BonusType.BOMBS);
+        Bonus bonus2 = creator.createBonus(point, Bonus.BonusType.SPEED);
+        Bonus bonus3 = creator.createBonus(point, Bonus.BonusType.RANGE);
+        Fire fire = creator.createFire(point);
+        Wall wall = creator.createWall(point);
+        Wood wood = creator.createWood(point);
 
         Replica replica = new Replica();
         replica.addToReplica(pawn);
@@ -41,7 +41,7 @@ public class JsonCreationCheck {
         List<Replicable> replicables = replica.getData();
         replica.addAllToReplica(replicables);
 
-        System.out.println(JsonHelper.toJson(position));
+        System.out.println(JsonHelper.toJson(point));
         System.out.println(JsonHelper.toJson(pawn));
         System.out.println(JsonHelper.toJson(bomb));
         System.out.println(JsonHelper.toJson(bonus1));
@@ -53,8 +53,5 @@ public class JsonCreationCheck {
 
         OutgoingMessage message = new OutgoingMessage(MessageType.REPLICA, replica.toString());
         System.out.println(JsonHelper.toJson(message));
-
-        replica.addAllToReplica(replicables);
-        System.out.println(replica.toString());
     }
 }
