@@ -17,9 +17,6 @@ public class GameSessionRepo {
     private final ConcurrentHashMap<String, GameSession> allSessions;
 
 
-    // TODO Решить что делать с этим парнем, жду ответа Александра
-    // TODO Решили, делаем свой пул, который будет переключаться между процессами
-    // Но для начала поищи, может быть есть на Ко-рутине уже библиотечки
     private SimpleAsyncTaskExecutor executor;
 
     private BeanFactory beans;
@@ -55,7 +52,7 @@ public class GameSessionRepo {
         return allSessions.size() + "";
     }
 
-    public void endGame(GameSession session) {
+    public void onSessionEnd(GameSession session) {
         allSessions.remove(session.getId().toString());
     }
 }

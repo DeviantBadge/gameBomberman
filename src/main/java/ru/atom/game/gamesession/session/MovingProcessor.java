@@ -1,10 +1,12 @@
 package ru.atom.game.gamesession.session;
 
 import ru.atom.game.enums.Direction;
+import ru.atom.game.enums.ObjectType;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
 import ru.atom.game.gamesession.state.GameState;
 import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;
+import ru.atom.game.objects.base.MovingObject;
 import ru.atom.game.objects.base.interfaces.Replicable;
 import ru.atom.game.objects.base.util.CellsSpace;
 import ru.atom.game.objects.base.util.ColliderFrame;
@@ -22,11 +24,13 @@ public class MovingProcessor {
     private GameSessionProperties properties;
     private GameState gameState;
     private ArrayList<Cell> changedCells;
+    private CollisionProcessor collisionProcessor;
 
     public MovingProcessor(GameSessionProperties properties, GameState gameState) {
         this.properties = properties;
         this.gameState = gameState;
         changedCells = new ArrayList<>();
+        collisionProcessor = new CollisionProcessor(properties);
     }
 
     public ArrayList<Cell> movePlayers(long ms) {
@@ -53,22 +57,23 @@ public class MovingProcessor {
             collidingSpace = new ColliderFrame(getCollidingSpace(pawn, newPosition));
             passedThrough = new CellsSpace(collidingSpace);
 
-            // collide with that cells
+            // collide with that cells;
             collide(pawn, collidingSpace, passedThrough);
 
             // так же, после того как он провзаимодействовал, можно провернить, коллайдится с объектом наша последняя позиция, тип для того что бы вызвать onEscape
-            // escape from this cells
+            // escape from this cells (для новых механик нажимных плит) - это нужно делать в функции collide
 
             leaveAndJoinCells(pawn, newPosition);
 
             // todo make some improvements
             // todo, make everything in one function !
+            // todo solve problem - we can collide twice with some objects (that objects placed in several cells) - solution - every step we change position and check collision
             pawn.setSuperPosition(newPosition.getPosition());
         }
         return getChangedCells();
     }
 
-    private void leaveAndJoinCells(Pawn pawn, Frame newPosition) {
+    private void leaveAndJoinCells(MovingObject pawn, Frame newPosition) {
         int stepAmountY;
         int stepAmountX;
         CellsSpace wasOn = new CellsSpace(pawn);
@@ -99,12 +104,12 @@ public class MovingProcessor {
         }
     }
 
-    private void collide(Pawn pawn, ColliderFrame collidingSpace, CellsSpace passedThrough) {
+    private void collide(MovingObject movingObject, ColliderFrame collidingSpace, CellsSpace passedThrough) {
         int stepAmount;
         int cellsBreadth;
         Cell cell;
         boolean changed;
-        switch (pawn.getDirection()) {
+        switch (movingObject.getDirection()) {
             case UP:
                 stepAmount = passedThrough.getTopY() - passedThrough.getBotY();
                 cellsBreadth = passedThrough.getRightX() - passedThrough.getLeftX();
@@ -116,8 +121,8 @@ public class MovingProcessor {
                                 passedThrough.getBotY() + i);
 
                         for (GameObject object : cell.getObjects()) {
-                            if (!object.collide(pawn) && collidingSpace.collide(object)) {
-                                changed = changed || onCollide(pawn, object);
+                            if (!object.collide(movingObject) && collidingSpace.collide(object)) {
+                                changed = changed || collisionProcessor.onCollide(movingObject, object);
                             }
                         }
                         if (changed)
@@ -137,8 +142,8 @@ public class MovingProcessor {
                                 passedThrough.getTopY() - i);
 
                         for (GameObject object : cell.getObjects()) {
-                            if (!object.collide(pawn) && collidingSpace.collide(object)) {
-                                changed = changed || onCollide(pawn, object);
+                            if (!object.collide(movingObject) && collidingSpace.collide(object)) {
+                                changed = changed || collisionProcessor.onCollide(movingObject, object);
                             }
                         }
                         if (changed)
@@ -158,8 +163,8 @@ public class MovingProcessor {
                                 passedThrough.getBotY() + j
                         );
                         for (GameObject object : cell.getObjects()) {
-                            if (!object.collide(pawn) && collidingSpace.collide(object)) {
-                                changed = changed || onCollide(pawn, object);
+                            if (!object.collide(movingObject) && collidingSpace.collide(object)) {
+                                changed = changed || collisionProcessor.onCollide(movingObject, object);
                             }
                         }
                         if (changed)
@@ -179,8 +184,8 @@ public class MovingProcessor {
                                 passedThrough.getBotY() + j
                         );
                         for (int k = 0; k < cell.getObjects().size(); k ++) {
-                            if (!cell.get(k).collide(pawn) && collidingSpace.collide(cell.get(k))) {
-                                changed = changed || onCollide(pawn, cell.get(k));
+                            if (!cell.get(k).collide(movingObject) && collidingSpace.collide(cell.get(k))) {
+                                changed = changed || collisionProcessor.onCollide(movingObject, cell.get(k));
                             }
                         }
                         if (changed)
@@ -194,36 +199,7 @@ public class MovingProcessor {
         }
     }
 
-    private boolean onCollide(Pawn pawn, GameObject object) {
-        boolean changed = false;
-        switch (object.getType()) {
-            case Bonus:
-                switch (((Bonus) object).getBonusType()) {
-                    case BOMBS:
-                        pawn.incMaxBombAmount();
-                        break;
-                    case RANGE:
-                        pawn.incBlowRange();
-                        break;
-                    case SPEED:
-                        pawn.incSpeedBonus();
-                        break;
-                }
-                ((Bonus) object).pickUp();
-                changed = true;
-                break;
-            case Pawn:
-                break;
-            case Bomb:
-            case Fire:
-            case Wall:
-            case Wood:
-                break;
-        }
-        return changed;
-    }
-
-    private Frame getCollidingSpace(Pawn pawn, Frame newPosition) {
+    private Frame getCollidingSpace(MovingObject pawn, Frame newPosition) {
         switch (pawn.getDirection()) {
             case RIGHT:
                 return new Frame(pawn.getBottomLeftPoint(), newPosition.getTopRightPoint());
@@ -239,7 +215,7 @@ public class MovingProcessor {
     }
 
     // Проблема - с направлениями (пришлось через кейс делать)
-    private Frame getResultPos(Pawn pawn, ColliderFrame collidingSpace, Frame newPosition, CellsSpace passedThrough) {
+    private Frame getResultPos(MovingObject pawn, ColliderFrame collidingSpace, Frame newPosition, CellsSpace passedThrough) {
         int stepAmount;
         int cellsBreadth;
         GameObject blockingObject;
@@ -345,17 +321,17 @@ public class MovingProcessor {
         return newPosition;
     }
 
-    private GameObject getBlockingObject(Pawn pawn, ColliderFrame collidingSpace, Cell cell) {
+    private GameObject getBlockingObject(MovingObject movingObject, ColliderFrame collidingSpace, Cell cell) {
         GameObject blocksFirst = null;
         List<GameObject> objects = cell.getObjects();
         for (GameObject object : objects) {
 
             // means that if player is collided with object (like when he planted bomb) it doesnt have to block him
-            if (object.isBlocking() && !object.collide(pawn) && collidingSpace.collide(object)) {
+            if (collisionProcessor.isBlocked(movingObject, object, collidingSpace)) {
                 if (blocksFirst == null)
                     blocksFirst = object;
                 else {
-                    switch (pawn.getDirection()) {
+                    switch (movingObject.getDirection()) {
                         case UP:
                             if (blocksFirst.getLeftBotY() > object.getLeftBotY())
                                 blocksFirst = object;
@@ -402,13 +378,25 @@ public class MovingProcessor {
         }
     }
 
-    private Frame move(Pawn player, long ms) {
-        double speedX = properties.getMovingSpeedX()
-                * (1 + properties.getSpeedBonusCoef() * player.getSpeedBonus());
-        double speedY = properties.getMovingSpeedY()
-                * (1 + properties.getSpeedBonusCoef() * player.getSpeedBonus());
+    private Frame move(MovingObject object, long ms) {
+        double speedX;
+        double speedY;
 
-        return move(player, speedX, speedY, player.getDirection(), ms);
+        switch (object.getType()) {
+            case Pawn:
+                Pawn player = (Pawn) object;
+                speedX = properties.getMovingSpeedX()
+                        * (1 + properties.getSpeedBonusCoef() * player.getSpeedBonus());
+                speedY = properties.getMovingSpeedY()
+                        * (1 + properties.getSpeedBonusCoef() * player.getSpeedBonus());
+                break;
+            default:
+                speedX = properties.getMovingSpeedX();
+                speedY = properties.getMovingSpeedY();
+                break;
+        }
+
+        return move(object, speedX, speedY, object.getDirection(), ms);
     }
 
     private void addChangedCell(Cell cell) {

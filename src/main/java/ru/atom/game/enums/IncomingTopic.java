@@ -4,5 +4,6 @@ public enum IncomingTopic {
     PLANT_BOMB,
     MOVE,
     JUMP,
-    CONNECT
+    CONNECT,
+    READY
 }

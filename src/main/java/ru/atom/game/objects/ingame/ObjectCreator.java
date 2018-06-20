@@ -42,13 +42,14 @@ public class ObjectCreator {
         return new Fire(idGen.generateId(), point, false);
     }
 
-    // todo add some property params
     public Pawn createPawn(Point point) {
         return new Pawn(idGen.generateId(), point,
-                new Point(Cell.CELL_SIZE_X / 4, Cell.CELL_SIZE_Y / 4),
-                Cell.CELL_SIZE_X / 2,
-                Cell.CELL_SIZE_Y / 2,
-                false, /* поставить параметр из пропертей */
+                new Point(
+                        Cell.CELL_SIZE_X * (1 - properties.getColliderSize()) / 2,
+                        Cell.CELL_SIZE_Y * (1 - properties.getColliderSize()) / 2),
+                Cell.CELL_SIZE_X * properties.getColliderSize(),
+                Cell.CELL_SIZE_Y * properties.getColliderSize(),
+                properties.isPlayerStopsPlayer(), /* поставить параметр из пропертей */
                 properties.getRangeOnStart(),
                 properties.getBombsOnStart(),
                 properties.getSpeedOnStart());

@@ -1,8 +1,6 @@
 package ru.atom.game.gamesession.properties;
 
 public class GameObjectProperties {
-
-    // TODO add blocking parameters, player colliding frame size
     GameObjectProperties(GameObjectPropertiesCreator creator) {
         bombBlowTimeMs = creator.getBombBlowTimeMs();
 
@@ -13,6 +11,8 @@ public class GameObjectProperties {
         speedOnStart = creator.getSpeedOnStart();
         bombsOnStart = creator.getBombsOnStart();
         rangeOnStart = creator.getRangeOnStart();
+        colliderSize = creator.getColliderSize();
+        playerStopsPlayer = creator.isPlayerStopsPlayer();
     }
 
     // ********************************
@@ -60,6 +60,9 @@ public class GameObjectProperties {
     private final int bombsOnStart;
     private final int rangeOnStart;
 
+    private final double colliderSize;
+    private final boolean playerStopsPlayer;
+
     public int getSpeedOnStart() {
         return speedOnStart;
     }
@@ -72,6 +75,13 @@ public class GameObjectProperties {
         return rangeOnStart;
     }
 
+    public double getColliderSize() {
+        return colliderSize;
+    }
+
+    public boolean isPlayerStopsPlayer() {
+        return playerStopsPlayer;
+    }
 
     // ********************************
     // Wall

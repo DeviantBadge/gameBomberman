@@ -21,21 +21,12 @@ public class Cell {
         this.point = point;
     }
 
-    // TODO mb it isnt good to do such things :3
     public void addObject(GameObject object) {
         if (!objects.contains(object)) {
             objects.add(object);
         } else {
             log.warn("You trying to add existing object to cell, object type " + object.getType());
         }
-
-        if (object.getType() != ObjectType.Pawn) {
-            if(!point.equals(object.getPosition())) {
-                log.warn("Incorrect object position, it must be equals to cell position");
-            }
-            object.setPosition(point);
-        }
-
     }
 
     public void removeObject(GameObject object) {
@@ -78,4 +69,5 @@ public class Cell {
     public boolean isEmpty() {
         return objects.isEmpty();
     }
+
 }

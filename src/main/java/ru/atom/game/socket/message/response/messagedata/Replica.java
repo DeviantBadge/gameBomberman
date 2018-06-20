@@ -23,14 +23,26 @@ public class Replica {
         data.addAll(replicable);
     }
 
-    public ArrayList<Replicable> getData() {
+    public ArrayList<Replicable> getDataAndClear() {
         ArrayList<Replicable> oldReplica = data;
         data = new ArrayList<>();
         return oldReplica;
     }
 
+    public ArrayList<Replicable> getData() {
+        return data;
+    }
+
+    public String toStringAndClear() {
+        return JsonHelper.toJson(getDataAndClear());
+    }
+
     @Override
     public String toString() {
         return JsonHelper.toJson(getData());
+    }
+
+    public void clear() {
+        data.clear();
     }
 }

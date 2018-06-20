@@ -29,7 +29,10 @@ ServerProxy.prototype.setupMessaging = function() {
 };
 
 ServerProxy.prototype.connectToGameServer = function(gameId) {
-    this.socket = new SockJS(gClusterSettings.gameServerUrl());
+    this.socket = new SockJS(gClusterSettings.gameServerUrl()
+        + "?name=" + gGameEngine.playerName
+        + "&gameId=" + gGameEngine.gameId
+    );
     var self = this;
     this.socket.onmessage = function (event) {
         var msg = JSON.parse(event.data);
@@ -41,6 +44,7 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
 
     this.socket.onopen = function () {
         console.log("Connected");
+        /*
         var template = {
             topic: "CONNECT",
             gameId: gGameEngine.gameId,
@@ -49,6 +53,7 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
             }
         };
         self.socket.send(JSON.stringify(template));
+        */
     };
 
     this.socket.onclose = function (event) {

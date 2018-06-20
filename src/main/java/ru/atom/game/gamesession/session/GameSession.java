@@ -3,11 +3,10 @@ package ru.atom.game.gamesession.session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.socket.WebSocketSession;
 import ru.atom.game.enums.Direction;
 import ru.atom.game.enums.MessageType;
-import ru.atom.game.socket.message.request.IncomingMessage;
-import ru.atom.game.socket.message.request.messagedata.Name;
+import ru.atom.game.gamesession.lists.OnlinePlayer;
+import ru.atom.game.repos.ConnectionPool;
 import ru.atom.game.socket.message.response.OutgoingMessage;
 import ru.atom.game.socket.message.response.messagedata.Possess;
 import ru.atom.game.socket.message.response.messagedata.Replica;
@@ -15,15 +14,12 @@ import ru.atom.game.objects.ingame.ObjectCreator;
 import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;
 import ru.atom.game.gamesession.state.GameState;
-import ru.atom.game.objects.ingame.Bomb;
 import ru.atom.game.objects.ingame.Bonus;
 import ru.atom.game.objects.ingame.Pawn;
-import ru.atom.game.objects.orders.Order;
-import ru.atom.game.enums.IncomingTopic;
+import ru.atom.game.gamesession.lists.Order;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
 import ru.atom.game.repos.GameSessionRepo;
 import ru.atom.game.socket.util.JsonHelper;
-import ru.atom.game.socket.util.SessionsList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +32,9 @@ public class GameSession extends OnlineSession {
     @Autowired
     private GameSessionRepo sessionRepo;
 
+    @Autowired
+    private ConnectionPool connections;
+
     private GameState gameState;
     private List<Cell> changedCells;
 
@@ -43,8 +42,8 @@ public class GameSession extends OnlineSession {
     private GameSessionProperties properties;
     private ObjectCreator creator;
 
-    private MovingProcessor movingProcessor;
-    // private BombProcessor bombProcessor;
+    private final MovingProcessor movingProcessor;
+    private final BombProcessor bombProcessor;
 
     // add objects to replica where we change them
     private Replica replica;
@@ -55,6 +54,10 @@ public class GameSession extends OnlineSession {
 
     // TODO when player disconnects, we have to remember his state and if he reconnects, we check if his sessions are active or not
 
+    // TODO after death, player have to see how he was killed, so, we have to disconnect him from server after small delay
+
+    // TODO add chat
+
     public GameSession(GameSessionProperties properties) {
         super(properties.getMaxPlayerAmount());
         this.properties = properties;
@@ -62,27 +65,15 @@ public class GameSession extends OnlineSession {
         gameState = new GameState(properties, creator);
         replica = new Replica();
         changedCells = new ArrayList<>();
+
         movingProcessor = new MovingProcessor(properties, gameState);
+        bombProcessor = new BombProcessor(properties, gameState, creator, replica);
     }
 
-    //TODO here we can create order builder - some factory !!
-    protected Order buildOrder(IncomingMessage message, WebSocketSession session) {
-        if (message.getTopic() == IncomingTopic.CONNECT) {
-            String name = JsonHelper.fromJson(message.getData(), Name.class).getName();
-            int playerNum = playerNum(name);
-            if (playerNum == -1) {
-                log.warn("Connecting to lobby where we does not logged in");
-                return null;
-            }
-            return new Order(playerNum, name, session);
-        }
-        int playerNum = playerNum(session);
-        if (playerNum < 0) {
-            log.warn("Player isn`t in this group. Group id - " + getId());
-            return null;
-        }
-        return new Order(playerNum, message);
-    }
+    //**************************
+    // SESSION LOGIC
+    //**************************
+
 
     @Override
     protected void act(long ms) {
@@ -93,8 +84,9 @@ public class GameSession extends OnlineSession {
 
     @Override
     protected void performTick(long ms) {
-        changedCells.addAll(movingProcessor.movePlayers(ms)) ;
-        tickBomb(ms);
+        // todo how to optimize it
+        changedCells.addAll(movingProcessor.movePlayers(ms));
+        changedCells.addAll(bombProcessor.tickBomb(ms));
         clearCells();
     }
 
@@ -102,21 +94,19 @@ public class GameSession extends OnlineSession {
     protected void carryOut(Order order) {
         switch (order.getIncomingTopic()) {
             case CONNECT:
+            case READY:
+                // todo implement ready statement
                 // sendTo(order.getPlayerNum(), getPossess());
                 if (playersAmount() < properties.getMaxPlayerAmount()) {
-                    connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
-                    replica.addAllToReplica(gameState.getFieldReplica());
-                    sendReplicaTo(order.getPlayerNum());
+                    sendReplicaTo(order.getPlayerNum(), JsonHelper.toJson(gameState.getFieldReplica()));
                 } else {
-                    replica.addAllToReplica(gameState.getFieldReplica());
-                    sendReplica();
+                    String rep = JsonHelper.toJson(gameState.getFieldReplica());
+                    for (int i = 0; i < playersAmount(); i++)
+                        if (i != order.getPlayerNum())
+                            sendReplicaTo(i, rep);
                     gameState.recreate();
                     replica.addAllToReplica(gameState.getFieldReplica());
-                    connectPlayerWithSocket(order.getPlayerNum(), order.getSession());
                 }
-
-                // TODO make connect from socketHandler
-                SessionsList.matchSessionWithGame(order.getSession(), this);
                 break;
 
             case JUMP:
@@ -143,32 +133,57 @@ public class GameSession extends OnlineSession {
                 curPlayer.setMoving(true);
                 break;
             case PLANT_BOMB:
-                plantBombBy(gameState.getPawns().get(order.getPlayerNum()));
+                bombProcessor.plantBombBy(gameState.getPawns().get(order.getPlayerNum()));
                 break;
         }
     }
 
-    private void plantBombBy(Pawn playerPawn) {
-        Cell standingOn = gameState.get(playerPawn.getCenter());
-        if (playerPawn.getBombCount() < playerPawn.getMaxBombAmount()) {
-            boolean canPlant = true;
-            List<GameObject> objects = standingOn.getObjects();
-            for (GameObject object : objects) {
-                switch (object.getType()) {
-                    case Pawn:
-                    case Fire:
-                        break;
-                    default:
-                        canPlant = false;
-                        break;
-                }
-            }
-            if (canPlant) {
-                gameState.addBomb(creator.createBomb(standingOn.getPosition(), playerPawn));
-                playerPawn.incBombCount();
+    @Override
+    protected void onStop() {
+        super.onStop();
+        int lastPlayer = gameState.getAliveNum();
+        if (lastPlayer != -1) {
+            String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU WON"));
+            sendTo(lastPlayer, message);
+
+            // TODO thats what i dislike, it doesnt belong to game process, we have to do it smwhere else
+            // It will be solved when i will create rules to classes and their rights
+            connections.unlink(getPlayer(lastPlayer), this);
+            sessionRepo.onSessionEnd(this);
+        }
+    }
+
+    @Override
+    public void addPlayer(OnlinePlayer player) {
+        super.addPlayer(player);
+        gameState.addPlayer();
+    }
+
+    // TODO надо четко определить фукционирование и области действия классов, один удаляет сокеты, другой не имеет права с ними работать
+    // TODO третий наоборот все делает с сокетами а первым двум только позволяет произвести какие то действия (реакция на событие, не больше)
+    @Override
+    public void onPlayerDisconnect(OnlinePlayer player) {
+        int playerNum = playerNum(player);
+        if (gameState.isWarmUp()) {
+            gameState.getPawns().remove(playerNum);
+            removePlayer(playerNum);
+            // TODO if we will store sessions, what player were in, we have to do smth here, i forgot what i wanted to do
+        } else {
+            gameState.getPawns().get(playerNum).die();
+            if (areAllDead()) {
+                stop();
             }
         }
     }
+
+    @Override
+    protected void stop() {
+        super.stop();
+    }
+
+    //**************************
+    // GAME LOGIC
+    //**************************
 
     private void clearCells() {
         Cell cell;
@@ -178,7 +193,6 @@ public class GameSession extends OnlineSession {
             for (int j = 0; j < cell.getObjects().size(); j++) {
                 onDestroy(cell.getObjects().get(j));
             }
-            cell.deleteDestroyed();
         }
         changedCells.clear();
     }
@@ -200,7 +214,7 @@ public class GameSession extends OnlineSession {
                     cell.addObject(bonus);
                     addObjectToReplica(bonus);
                 }
-                break;
+                return;
 
             case Pawn:
                 if (!gameState.isWarmUp()) {
@@ -211,104 +225,25 @@ public class GameSession extends OnlineSession {
                 } else {
                     ((Pawn) object).riseAgain();
                 }
-                break;
+                return;
+            default:
         }
-    }
-
-    private boolean areAllDead() {
-        return gameState.deadPawnsAmount() >= properties.getMaxPlayerAmount() - 1;
     }
 
     private void onPlayerDeath(Pawn object) {
         String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU DIED"));
         int playerNum = gameState.playerNum(object);
         sendTo(playerNum, message);
-        SessionsList.unfastenSessionWithGame(getPlayersSocket(playerNum));
+        connections.unlink(getPlayer(playerNum), this);
     }
 
-    private void tickBomb(long ms) {
-        List<Bomb> bombs = gameState.getBombs();
-        for (Bomb bomb : bombs) {
-            if (bomb.isReady())
-                continue;
-            bomb.tick(ms);
-            if (bomb.isReady()) {
-                blowBomb(bomb);
-            }
-        }
-        bombs.removeIf(Bomb::isDestroyed);
+    private boolean areAllDead() {
+        return gameState.deadPawnsAmount() >= properties.getMaxPlayerAmount() - 1;
     }
 
-    private void blowBomb(Bomb bomb) {
-        creator.destroy(bomb);
-
-        int x = bomb.getIntX() / 32;
-        int y = bomb.getIntY() / 32;
-        blow(gameState.get(x, y));
-        int blowRange = bomb.getOwner().getBlowRange();
-
-        for (int j = 1; j <= blowRange && (y + j) < gameState.getSizeY(); j++) {
-            if (!blow(gameState.get(x, y + j)))
-                break;
-        }
-        for (int j = 1; j <= blowRange && (x + j) < gameState.getSizeX(); j++) {
-            if (!blow(gameState.get(x + j, y)))
-                break;
-        }
-        for (int j = 1; j <= blowRange && (y - j) >= 0; j++) {
-            if (!blow(gameState.get(x, y - j)))
-                break;
-        }
-        for (int j = 1; j <= blowRange && (x - j) >= 0; j++) {
-            if (!blow(gameState.get(x - j, y)))
-                break;
-        }
-        bomb.getOwner().decBombCount();
-    }
-
-    private boolean blow(Cell cell) {
-        boolean destroyed = true;
-        boolean stopDestroying = false;
-        boolean changed = false;
-
-        for (GameObject object : cell.getObjects()) {
-            switch (object.getType()) {
-                case Bomb:
-                    changed = true;
-                    if (object.isDestroyed())
-                        continue;
-                    Bomb bomb = (Bomb) object;
-                    bomb.stop();
-                    blowBomb(bomb);
-                    break;
-
-                case Bonus:
-                case Wood:
-                    stopDestroying = properties.isBlowStopsOnWall();
-                    changed = true;
-                    break;
-
-                case Pawn:
-                    if (gameState.isWarmUp())
-                        continue;
-                    changed = true;
-                    break;
-            }
-            // todo here we get parameter from property, like we wanna stop 2 bombs blowing near, or not
-            destroyed = destroyed && creator.destroy(object);
-        }
-        if (changed)
-            addChangedCell(cell);
-
-        if (destroyed)
-            addObjectToReplica(creator.createFire(cell.getPosition()));
-        return destroyed && !stopDestroying;
-    }
-
-    private void addChangedCell(Cell cell) {
-        if (!changedCells.contains(cell))
-            changedCells.add(cell);
-    }
+    //********************************
+    // REPLICA
+    //********************************
 
     private void addAliveObjectsToReplica() {
         replica.addAllToReplica(gameState.getBombs());
@@ -320,60 +255,17 @@ public class GameSession extends OnlineSession {
     }
 
     private void sendReplica() {
-        String message = JsonHelper.toJson(new OutgoingMessage(MessageType.REPLICA, replica.toString()));
+        String message = JsonHelper.toJson(new OutgoingMessage(MessageType.REPLICA, replica.toStringAndClear()));
         sendAll(message);
     }
 
-    private void sendReplicaTo(int playerNum) {
-        String message = JsonHelper.toJson(new OutgoingMessage(MessageType.REPLICA, replica.toString()));
-        sendTo(playerNum, message);
+    private void sendReplicaTo(int playerNum, String replica) {
+        replica = JsonHelper.toJson(new OutgoingMessage(MessageType.REPLICA, replica));
+        sendTo(playerNum, replica);
     }
 
     private String getPossess() {
         Possess possess = new Possess(gameState.getSizeY(), gameState.getSizeX(), 0);
         return JsonHelper.toJson(new OutgoingMessage(MessageType.POSSESS, JsonHelper.toJson(possess)));
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        int lastPlayer = gameState.getAliveNum();
-        if (lastPlayer != -1) {
-            String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU WON"));
-            sendTo(lastPlayer, message);
-            // TODO thats what i dislike, it doesnt belong to game process, we have to do it smwhere else
-            // It will be solved when i will create rules to classes and their rights
-            SessionsList.unfastenSessionWithGame(getPlayersSocket(lastPlayer));
-            sessionRepo.endGame(this);
-        }
-    }
-
-    @Override
-    public void addPlayer(String name) {
-        super.addPlayer(name);
-        gameState.addPlayer();
-    }
-
-    // TODO надо четко определить фукционирование и области действия классов, один удаляет сокеты, другой не имеет права с ними работать
-    // TODO третий наоборот все делает с сокетами а первым двум только позволяет произвести какие то действия (реакция на событие, не больше)
-    @Override
-    public void onPlayerDisconnect(WebSocketSession session) {
-        int playerNum = playerNum(session);
-        if (gameState.isWarmUp()) {
-            gameState.getPawns().remove(playerNum);
-            removePlayer(playerNum);
-            // TODO if we will store sessions, what player were in, we have to do smth here, i forgot what i wanted to do
-        } else {
-            gameState.getPawns().get(playerNum).die();
-            super.onPlayerDisconnect(session);
-            if (areAllDead()) {
-                stop();
-            }
-        }
-    }
-
-    @Override
-    protected void stop() {
-        super.stop();
     }
 }

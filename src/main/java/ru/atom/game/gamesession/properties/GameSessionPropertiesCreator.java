@@ -218,4 +218,14 @@ public class GameSessionPropertiesCreator extends GameObjectPropertiesCreator {
     public GameSessionPropertiesCreator setRangeOnStart(int rangeOnStart) {
         return (GameSessionPropertiesCreator) super.setRangeOnStart(rangeOnStart);
     }
+
+    @Override
+    public GameSessionPropertiesCreator setColliderSize(double colliderSize) {
+        return (GameSessionPropertiesCreator) super.setColliderSize(colliderSize);
+    }
+
+    @Override
+    public GameSessionPropertiesCreator setPlayerStopsPlayer(boolean playerStopsPlayer) {
+        return (GameSessionPropertiesCreator) super.setPlayerStopsPlayer(playerStopsPlayer);
+    }
 }

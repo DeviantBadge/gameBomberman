@@ -70,12 +70,6 @@ public class GameState {
         get(playerPos).addObject(player);
     }
 
-    // TODO public void addPlayerToCell(Pawn player, Cell cell) ;
-
-    // TODO public void removePlayerFromCell(Pawn player, Cell cell);
-
-
-
     public List<Bomb> getBombs() {
         return bombs;
     }

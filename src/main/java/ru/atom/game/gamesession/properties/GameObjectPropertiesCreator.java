@@ -74,6 +74,9 @@ public class GameObjectPropertiesCreator {
     private int bombsOnStart = 1;
     private int rangeOnStart = 1;
 
+    private double colliderSize = 1 / 2.0;
+    private boolean playerStopsPlayer = false;
+
     public GameObjectPropertiesCreator setSpeedOnStart(int speedOnStart) {
         speedOnStart = intervalCheck(speedOnStart, 0, 100);
         this.speedOnStart = speedOnStart;
@@ -92,6 +95,17 @@ public class GameObjectPropertiesCreator {
         return this;
     }
 
+    public GameObjectPropertiesCreator setColliderSize(double colliderSize) {
+        colliderSize = intervalCheck(colliderSize, 0, 1);
+        this.colliderSize = colliderSize;
+        return this;
+    }
+
+    public GameObjectPropertiesCreator setPlayerStopsPlayer(boolean playerStopsPlayer) {
+        this.playerStopsPlayer = playerStopsPlayer;
+        return this;
+    }
+
     public int getSpeedOnStart() {
         return speedOnStart;
     }
@@ -104,6 +118,13 @@ public class GameObjectPropertiesCreator {
         return rangeOnStart;
     }
 
+    public double getColliderSize() {
+        return colliderSize;
+    }
+
+    public boolean isPlayerStopsPlayer() {
+        return playerStopsPlayer;
+    }
 
     // ********************************
     // Wall
@@ -124,7 +145,9 @@ public class GameObjectPropertiesCreator {
                 .setProbabilities(Math.random(), Math.random(), Math.random())
                 .setSpeedOnStart((int) (Math.random() * 3) + 1)
                 .setBombsOnStart((int) (Math.random() * 3) + 1)
-                .setRangeOnStart((int) (Math.random() * 3) + 1);
+                .setRangeOnStart((int) (Math.random() * 3) + 1)
+                .setColliderSize(Math.random())
+                .setPlayerStopsPlayer(Math.random() < 0.5);
     }
 
 

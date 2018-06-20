@@ -16,8 +16,7 @@ public class GameField {
     private static final int X_CELL_SIZE = 32;
     private static final int Y_CELL_SIZE = 32;
 
-    // TODO make another class Field, create it by patterns (it will create by creator)
-    // TODO if we want to add new maps we add it here, but i think we could do it better
+    //todo add new maps
     private final List<List<Cell>> cells;
     private List<Point> initialPoints;
     private List<Point> freePoints;

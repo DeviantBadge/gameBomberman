@@ -12,35 +12,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class PlayersList {
     private static final Logger log = LoggerFactory.getLogger(PlayersList.class);
 
-    public static class OnlinePlayer {
-        private final String name;
-        private WebSocketSession session;
-
-        OnlinePlayer(String name, WebSocketSession session) {
-            this.session = session;
-            this.name = name;
-        }
-
-        OnlinePlayer(String name) {
-            this(name, null);
-        }
-
-        public void setSession(WebSocketSession session) {
-            if (this.session != null && session != null)
-                log.warn("Smbdy want to connect to existing player");
-            else
-                this.session = session;
-        }
-
-        public WebSocketSession getSession() {
-            return session;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
     private List<OnlinePlayer> players;
     private int maxAmount;
 
@@ -49,49 +20,10 @@ public class PlayersList {
         this.maxAmount = maxPlayerAmount;
     }
 
-    public int playerNum(WebSocketSession session) {
-        int playerNum = -1;
-        for (int i = 0; i < players.size(); i++) {
-            if (players.get(i).getSession() == session) {
-                playerNum = i;
-                break;
-            }
-        }
-        return playerNum;
-    }
-
-    public int playerNum(String name) {
-        int playerNum = -1;
-        for (int i = 0; i < players.size(); i++) {
-            if (players.get(i).getName().equals(name)) {
-                playerNum = i;
-                break;
-            }
-        }
-        return playerNum;
-    }
-
-    public String getName(int num) {
-        return players.get(num).getName();
-    }
-
-    public OnlinePlayer createNewPlayer(String name) {
-        OnlinePlayer onlinePlayer = null;
-        if (players.size() < maxAmount) {
-            onlinePlayer = new OnlinePlayer(name);
-            players.add(onlinePlayer);
-        }
-        return onlinePlayer;
-    }
-
-    public void connectPlayerWithSocket(int playerNum, WebSocketSession session) {
-        players.get(playerNum).setSession(session);
-    }
-
     public void sendAll(String data) {
         players.forEach(onlinePlayer -> {
             try {
-                WebSocketSession socketSession = onlinePlayer.getSession();
+                WebSocketSession socketSession = onlinePlayer.getSocket();
                 if (socketSession != null && socketSession.isOpen())
                     socketSession.sendMessage(new TextMessage(data));
             } catch (IOException e) {
@@ -100,10 +32,9 @@ public class PlayersList {
         });
     }
 
-    // TODO why here synchronized dont help us?
     public void sendTo(int playerNum, String data) {
         try {
-            WebSocketSession socketSession = players.get(playerNum).getSession();
+            WebSocketSession socketSession = players.get(playerNum).getSocket();
             if (socketSession != null && socketSession.isOpen())
                 socketSession.sendMessage(new TextMessage(data));
         } catch (IOException e) {
@@ -111,18 +42,25 @@ public class PlayersList {
         }
     }
 
+    public OnlinePlayer getPlayer(int num) {
+        return players.get(num);
+    }
+
+    public int playerNum(OnlinePlayer player) {
+        return players.indexOf(player);
+    }
+
     public int size() {
         return players.size();
     }
 
-    public void close(int playerNum) {
-        synchronized (players.get(playerNum)) {
-            players.get(playerNum).setSession(null);
-        }
+    public boolean contains(OnlinePlayer player) {
+        return players.contains(player);
     }
 
-    public WebSocketSession getSession(int playerNum) {
-        return players.get(playerNum).getSession();
+    public void addPlayer(OnlinePlayer player) {
+        if(players.size() < maxAmount)
+            players.add(player);
     }
 
     public void removePlayer(int playerNum) {

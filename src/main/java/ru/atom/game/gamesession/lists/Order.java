@@ -1,4 +1,4 @@
-package ru.atom.game.objects.orders;
+package ru.atom.game.gamesession.lists;
 
 import org.springframework.web.socket.WebSocketSession;
 import ru.atom.game.enums.Direction;
@@ -14,37 +14,27 @@ public class Order {
     private int playerNum;
     private IncomingTopic incomingTopic;
     private Direction movementType = null;
-    private String name = null;
-    private WebSocketSession session = null;
 
     public Order(int playerNum, IncomingMessage message) {
         this.playerNum = playerNum;
         this.incomingTopic = message.getTopic();
-        if (incomingTopic == IncomingTopic.MOVE) {
-            movementType = JsonHelper.fromJson(message.getData(), InGameMovement.class).getDirection();
-        }
-        if (incomingTopic == IncomingTopic.CONNECT) {
-            name = JsonHelper.fromJson(message.getData(), Name.class).getName();
+        switch (incomingTopic) {
+            case MOVE:
+                movementType = JsonHelper.fromJson(message.getData(), InGameMovement.class).getDirection();
+                break;
+            case CONNECT:
+            case READY:
+            case PLANT_BOMB:
+            case JUMP:
+                default:
+                    break;
+
         }
     }
 
-    public Order(int playerNum, String name, WebSocketSession session) {
+    public Order(int playerNum, IncomingTopic topic) {
         this.playerNum = playerNum;
-        this.name = name;
-        this.session = session;
-        incomingTopic = IncomingTopic.CONNECT;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setSession(WebSocketSession session) {
-        this.session = session;
-    }
-
-    public WebSocketSession getSession() {
-        return session;
+        incomingTopic = topic;
     }
 
     public int getPlayerNum() {

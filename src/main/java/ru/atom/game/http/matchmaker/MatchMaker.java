@@ -3,9 +3,11 @@ package ru.atom.game.http.matchmaker;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.atom.game.gamesession.lists.OnlinePlayer;
 import ru.atom.game.gamesession.properties.GameSessionPropertiesCreator;
 import ru.atom.game.gamesession.session.GameSession;
 import ru.atom.game.http.matchmaker.mmunit.RatingSessionWrapper;
+import ru.atom.game.repos.ConnectionPool;
 
 import java.util.ArrayList;
 
@@ -15,14 +17,16 @@ import java.util.ArrayList;
 // NOT this class will be ticker, but another one, that will be daemon
 @Service
 public class MatchMaker {
-
-    // TODO make matchMaker daemon, so he will be processing every second like session
+    // TODO make matchMaker daemon, so he will be processing every second like session (its better to create daemon, that will handle all tasks once per second)
 
     @Autowired
     private BeanFactory beans;
 
     @Autowired
     private MatchMakerSessionRepo sessionRepo;
+
+    @Autowired
+    private ConnectionPool pool;
 
 
     // TODO рейтинг будет переделан в соответствии с моделью - много серверов держащих бомберман, мм является что то вроде распределителя нагрузки
@@ -33,12 +37,14 @@ public class MatchMaker {
     Integer getCommonSessionID(String name) {
         GameSessionPropertiesCreator creator = beans.getBean(GameSessionPropertiesCreator.class)
                 .setMaxPlayerAmount(3)
-                .setBlowStopsOnWall(false)
+                // .setBlowStopsOnWall(false)
                 .setSpeedOnStart(3)
                 .setBonusProbability(1)
-                .setProbabilities(1,1,1);
+                .setProbabilities(1,1,1)
+                .setPlayerStopsPlayer(true)
+                .setBombBlowAsOne(false);
         GameSession session = sessionRepo.pollOrCreateCommonSession(creator.createProperties());
-        session.addPlayer(name);
+        session.addPlayer(createPlayer(name));
         sessionRepo.putCommonSessionBack(session);
 
         return session.getId();
@@ -55,7 +61,7 @@ public class MatchMaker {
             for(int i = 0; i < ratingSessions.size(); i ++) {
                 ratingSession = ratingSessions.get(i);
                 if(ratingSession.inRadius(1000)) {
-                    ratingSession.getSession().addPlayer(name);
+                    ratingSession.getSession().addPlayer(createPlayer(name));
                     if(ratingSession.getSession().isFull())
                         ratingSessions.remove(i);
                     found = true;
@@ -71,5 +77,12 @@ public class MatchMaker {
             }
             return ratingSession.getSession().getId();
         }
+    }
+
+    private OnlinePlayer createPlayer(String name) {
+        //todo - move it to another mb func?
+        OnlinePlayer player = new OnlinePlayer(name);
+        pool.addNewPlayer(player);
+        return player;
     }
 }

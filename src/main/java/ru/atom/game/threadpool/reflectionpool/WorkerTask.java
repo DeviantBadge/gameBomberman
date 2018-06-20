@@ -8,9 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-// TODO how can we act in Ticker? (i will leave it here, just for science (and fun:P))
-// it works bad for small amount of tickers, but very good for a lot of tickers.
-// 1 - I will call act() by reflection
 class WorkerTask implements Runnable {
     static Method tickerAct;
     ConcurrentLinkedQueue<TickerWrapper> tasks;

@@ -13,7 +13,6 @@ import javax.swing.text.Position;
 
 public abstract class GameObject extends ColliderFrame implements Destroyable, Replicable {
     protected final static Logger log = LoggerFactory.getLogger(GameObject.class);
-    // TODO make GameObject positionable
     private final Integer id;
     private final ObjectType type;
     private final boolean blocking;

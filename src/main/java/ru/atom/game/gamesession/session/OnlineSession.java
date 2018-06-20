@@ -1,14 +1,19 @@
 package ru.atom.game.gamesession.session;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.WebSocketSession;
+import ru.atom.game.enums.IncomingTopic;
+import ru.atom.game.gamesession.lists.OnlinePlayer;
 import ru.atom.game.gamesession.lists.OrderList;
 import ru.atom.game.gamesession.lists.PlayersList;
 import ru.atom.game.socket.message.request.IncomingMessage;
 import ru.atom.game.objects.base.util.IdGen;
-import ru.atom.game.objects.orders.Order;
-import ru.atom.game.socket.util.SessionsList;
+import ru.atom.game.gamesession.lists.Order;
+import ru.atom.game.socket.message.request.messagedata.Name;
+import ru.atom.game.socket.util.JsonHelper;
 
 public abstract class OnlineSession extends Ticker {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(OnlineSession.class);
     private static final IdGen idGen = new IdGen();
     private final Integer id;
 
@@ -17,7 +22,7 @@ public abstract class OnlineSession extends Ticker {
     private OrderList orderList;
     private int max;
 
-    public OnlineSession(int maxPlayerAmount){
+    public OnlineSession(int maxPlayerAmount) {
         super(60);
         id = idGen.generateId();
 
@@ -30,9 +35,21 @@ public abstract class OnlineSession extends Ticker {
     // SESSION functions
     // **********************
 
-    public void addOrder(IncomingMessage message, WebSocketSession session) {
-        Order order = buildOrder(message, session);
-        if(order != null)
+    public boolean onPlayerConnect(OnlinePlayer player) {
+        int playerNum = playerNum(player);
+        if (playerNum == -1) {
+            log.warn("Connecting to lobby where we does not logged in");
+            return false;
+        }
+
+        // todo think about how to create order and realise that !! (now its better, then it was, but how we will handle it in chat?)
+        putOrder(new Order(playerNum, IncomingTopic.CONNECT));
+        return true;
+    }
+
+    public void addOrder(OnlinePlayer player, IncomingMessage message) {
+        Order order = buildOrder(player, message);
+        if (order != null)
             putOrder(order);
     }
 
@@ -56,34 +73,25 @@ public abstract class OnlineSession extends Ticker {
 
     protected abstract void performTick(long ms);
 
-    protected abstract Order buildOrder(IncomingMessage message, WebSocketSession session);
+    protected Order buildOrder(OnlinePlayer player, IncomingMessage message) {
+        int playerNum = playerNum(player);
+        if (playerNum < 0) {
+            log.warn("Player isn`t in this group. Group id - " + getId());
+            return null;
+        }
+        return new Order(playerNum, message);
+    }
 
     // **********************
     // players list functions
     // **********************
 
-    protected int playerNum(WebSocketSession session) {
-        return playersList.playerNum(session);
+    protected int playerNum(OnlinePlayer player) {
+        return playersList.playerNum(player);
     }
 
-    protected int playerNum(String name) {
-        return playersList.playerNum(name);
-    }
-
-    protected WebSocketSession getPlayersSocket(int playerNum) {
-        return playersList.getSession(playerNum);
-    }
-
-    protected String getPlayerName(int num) {
-        return playersList.getName(num);
-    }
-
-    protected void createNewPlayer(String name) {
-        playersList.createNewPlayer(name);
-    }
-
-    protected void connectPlayerWithSocket(int playerNum, WebSocketSession session) {
-        playersList.connectPlayerWithSocket(playerNum, session);
+    protected OnlinePlayer getPlayer(int num) {
+        return playersList.getPlayer(num);
     }
 
     protected void sendAll(String data) {
@@ -91,7 +99,7 @@ public abstract class OnlineSession extends Ticker {
     }
 
     protected void sendTo(int playerNum, String data) {
-        if(playerNum < 0 || playerNum >= playersList.size())
+        if (playerNum < 0 || playerNum >= playersList.size())
             return;
         playersList.sendTo(playerNum, data);
     }
@@ -100,27 +108,15 @@ public abstract class OnlineSession extends Ticker {
         return playersList.size();
     }
 
-    public void addPlayer(String name) {
-        // TODO adding player here, then checking it while player connecting to room
-        // TODO have we add player DATA from data base here or not?
-        createNewPlayer(name);
-    }
-
-    // TODO realise it better, i made it fast and inaccurately, thats because we dont match socket with GameSessions what this socket uses
-    public void onPlayerDisconnect(WebSocketSession session) {
-        int playerNum = playerNum(session);
-        if(playerNum == -1)
-            return;
-        playersList.close(playerNum(session));
+    public void addPlayer(OnlinePlayer player) {
+        playersList.addPlayer(player);
     }
 
     public boolean isFull() {
         return playersAmount() == max;
     }
 
-    protected void closeSession(int playerNum) {
-        playersList.close(playerNum);
-    }
+    public abstract void onPlayerDisconnect(OnlinePlayer player);
 
     protected void removePlayer(int playerNum) {
         playersList.removePlayer(playerNum);
