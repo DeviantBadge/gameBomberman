@@ -47,7 +47,7 @@ public class GameSession extends OnlineSession {
 
     // add objects to replica where we change them
     private Replica replica;
-    // todo - idea, objects have hp
+    // todo - idea, objects have hp, lasers and other mechanics
 
     //TODO mb add something like game type - deathMatch singleLife - or it could be made by properties but how ?
 
