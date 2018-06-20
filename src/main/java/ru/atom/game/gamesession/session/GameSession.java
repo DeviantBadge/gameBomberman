@@ -47,12 +47,13 @@ public class GameSession extends OnlineSession {
 
     // add objects to replica where we change them
     private Replica replica;
+    // todo - idea, objects have hp
 
     //TODO mb add something like game type - deathMatch singleLife - or it could be made by properties but how ?
 
     // TODO i dont know how, but part of this code we have to move to another class
 
-    // TODO when player disconnects, we have to remember his state and if he reconnects, we check if his sessions are active or not
+    // TODO when player disconnects, we have to remember his state and if he reconnects, we check if his sessions are active or not - make it by data bases
 
     // TODO after death, player have to see how he was killed, so, we have to disconnect him from server after small delay
 
@@ -167,7 +168,6 @@ public class GameSession extends OnlineSession {
         if (gameState.isWarmUp()) {
             gameState.getPawns().remove(playerNum);
             removePlayer(playerNum);
-            // TODO if we will store sessions, what player were in, we have to do smth here, i forgot what i wanted to do
         } else {
             gameState.getPawns().get(playerNum).die();
             if (areAllDead()) {
@@ -185,6 +185,7 @@ public class GameSession extends OnlineSession {
     // GAME LOGIC
     //**************************
 
+    // todo - problem with double destroy (if object will be in two destroyed cells we will destroy him twice)
     private void clearCells() {
         Cell cell;
 

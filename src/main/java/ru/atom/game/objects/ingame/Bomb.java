@@ -14,6 +14,7 @@ public class Bomb extends GameObject implements Ticking {
     private final long loopTime; // 5 seconds
     @JsonIgnore
     private long timeLeft;
+    private boolean blown = false;
 
     Bomb(Integer id, Point point, Pawn owner, long loopTime, boolean blocking) {
         super(id, ObjectType.Bomb, point, new Point(0,0), Cell.CELL_SIZE_X, Cell.CELL_SIZE_Y, blocking);
@@ -39,10 +40,19 @@ public class Bomb extends GameObject implements Ticking {
         timeLeft -= ms;
     }
 
+    public void setBlown(boolean blown) {
+        this.blown = blown;
+    }
+
     @Override
     @JsonIgnore
     public boolean isReady() {
         return (timeLeft <= 0);
+    }
+
+    @JsonIgnore
+    public boolean isBlown() {
+        return blown;
     }
 
     @Override

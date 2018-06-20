@@ -44,6 +44,7 @@ public class CollisionProcessor {
                                 pawn.incSpeedBonus();
                                 break;
                         }
+                        // todo - destroying object not with creator as in other places
                         ((Bonus) object).pickUp();
                         changed = true;
                         break;
