@@ -1,21 +1,16 @@
-package ru.atom.game.gamesession.session;
+package ru.atom.game.gamesession.session.processors;
 
 import ru.atom.game.enums.Direction;
-import ru.atom.game.enums.ObjectType;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
 import ru.atom.game.gamesession.state.GameState;
 import ru.atom.game.objects.base.Cell;
 import ru.atom.game.objects.base.GameObject;
 import ru.atom.game.objects.base.MovingObject;
-import ru.atom.game.objects.base.interfaces.Replicable;
 import ru.atom.game.objects.base.util.CellsSpace;
 import ru.atom.game.objects.base.util.ColliderFrame;
 import ru.atom.game.objects.base.util.Frame;
-import ru.atom.game.objects.base.util.Point;
-import ru.atom.game.objects.ingame.Bonus;
 import ru.atom.game.objects.ingame.Pawn;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MovingProcessor {
@@ -23,17 +18,15 @@ public class MovingProcessor {
 
     private GameSessionProperties properties;
     private GameState gameState;
-    private ArrayList<Cell> changedCells;
     private CollisionProcessor collisionProcessor;
 
     public MovingProcessor(GameSessionProperties properties, GameState gameState) {
         this.properties = properties;
         this.gameState = gameState;
-        changedCells = new ArrayList<>();
         collisionProcessor = new CollisionProcessor(properties);
     }
 
-    public ArrayList<Cell> movePlayers(long ms) {
+    public void movePlayers(long ms) {
         Frame newPosition;
         ColliderFrame collidingSpace;
         CellsSpace passedThrough;
@@ -70,7 +63,6 @@ public class MovingProcessor {
             // todo solve problem - we can collide twice with some objects (that objects placed in several cells) - solution - every step we change position and check collision
             pawn.setSuperPosition(newPosition.getPosition());
         }
-        return getChangedCells();
     }
 
     private void leaveAndJoinCells(MovingObject pawn, Frame newPosition) {
@@ -126,7 +118,7 @@ public class MovingProcessor {
                             }
                         }
                         if (changed)
-                            addChangedCell(cell);
+                            cell.setChanged(true);
                     }
                 }
                 break;
@@ -147,7 +139,7 @@ public class MovingProcessor {
                             }
                         }
                         if (changed)
-                            addChangedCell(cell);
+                            cell.setChanged(true);
                     }
                 }
                 break;
@@ -168,7 +160,7 @@ public class MovingProcessor {
                             }
                         }
                         if (changed)
-                            addChangedCell(cell);
+                            cell.setChanged(true);
                     }
                 }
                 break;
@@ -189,7 +181,7 @@ public class MovingProcessor {
                             }
                         }
                         if (changed)
-                            addChangedCell(cell);
+                            cell.setChanged(true);
                     }
                 }
                 break;
@@ -397,15 +389,5 @@ public class MovingProcessor {
         }
 
         return move(object, speedX, speedY, object.getDirection(), ms);
-    }
-
-    private void addChangedCell(Cell cell) {
-        changedCells.add(cell);
-    }
-
-    public ArrayList<Cell> getChangedCells() {
-        ArrayList<Cell> cells = changedCells;
-        changedCells = new ArrayList<>();
-        return cells;
     }
 }

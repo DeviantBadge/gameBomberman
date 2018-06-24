@@ -13,6 +13,7 @@ import java.io.IOException;
 
 @Ignore
 public class ChatClientTest {
+    // TODO ADD ANOTHER TESSSSSSTTTS!!!!!!!!!!!!!!!
     private static final Logger log = LoggerFactory.getLogger(ChatClientTest.class);
     private static NameGen gen = new NameGen();
 

@@ -13,12 +13,14 @@ import ru.atom.game.gamesession.properties.GameSessionProperties;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 public class GameState {
 
     private final List<Bomb> bombs;
     private final List<Pawn> pawns;
     private boolean warmUp;
+    private boolean gameEnded = false;
 
     private ObjectCreator creator;
     private GameField gameField;
@@ -135,6 +137,9 @@ public class GameState {
         }
         return amount;
     }
+    public void forEachCell (Consumer<? super Cell> action) {
+        gameField.forEach(action);
+    }
 
     // sometimes player will be under field
     public List<Replicable> getFieldReplica() {
@@ -143,5 +148,13 @@ public class GameState {
 
     public void removeObject(GameObject object) {
         get(object.getCenter()).removeObject(object);
+    }
+
+    public void setGameEnded(boolean gameEnded) {
+        this.gameEnded = gameEnded;
+    }
+
+    public boolean isGameEnded() {
+        return gameEnded;
     }
 }

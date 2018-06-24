@@ -17,6 +17,7 @@ public abstract class GameObject extends ColliderFrame implements Destroyable, R
     private final ObjectType type;
     private final boolean blocking;
     private boolean destroyed = false;
+    private boolean deleted = false;
 
 
     public GameObject(Integer id, ObjectType type, Point absolutePosition,
@@ -25,6 +26,10 @@ public abstract class GameObject extends ColliderFrame implements Destroyable, R
         this.id = id;
         this.type = type;
         this.blocking = blocking;
+    }
+
+    private void setDestroyed(boolean destroyed) {
+        this.destroyed = destroyed;
     }
 
     public Integer getId() {
@@ -45,11 +50,11 @@ public abstract class GameObject extends ColliderFrame implements Destroyable, R
         return blocking;
     }
 
-    // for example we have player, it could be destroyed (killed) but it doesn`t mean that we have to delete it from game
-    // but for common objects its wrong
+    // destroyed by bomb
+    // deleted by game session - if deleted we remove it from the game (that means, that onDestroy handled)
     @JsonIgnore
     public boolean isDeleted() {
-        return destroyed;
+        return deleted;
     }
 
     @Override
@@ -64,12 +69,31 @@ public abstract class GameObject extends ColliderFrame implements Destroyable, R
         return destroyed;
     }
 
+    // todo mb implement it
+    @JsonIgnore
+    @Override
+    public boolean isRestorable() {
+        return true;
+    }
+
+    public void delete() {
+        if(!isDestroyed())
+            log.warn("Deleting object what was not destroyed.");
+        deleted = true;
+    }
+
     @Override
     public boolean destroy() {
-        if (isDestroyable() && !isDestroyed()) {
-            return destroyed = true;
-        }
-        return false;
+        if (isDestroyable())
+            setDestroyed(true);
+        return isDestroyed();
+    }
+
+    @Override
+    public boolean restore() {
+        if (isRestorable())
+            setDestroyed(false);
+        return !isDestroyed();
     }
 
     @Override

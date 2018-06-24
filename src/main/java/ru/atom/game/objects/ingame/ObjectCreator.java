@@ -16,7 +16,9 @@ public class ObjectCreator {
     }
 
     public Bomb createBomb(Point point, Pawn owner) {
-        return new Bomb(idGen.generateId(), point, owner, properties.getBombBlowTimeMs(), true);
+        Bomb bomb = new Bomb(idGen.generateId(), point, owner, properties.getBombBlowTimeMs(), true);
+        bomb.start();
+        return bomb;
     }
 
     public Bonus createBonus(Point point, boolean considerProbability) {
@@ -61,13 +63,5 @@ public class ObjectCreator {
 
     public Wood createWood(Point point) {
         return new Wood(idGen.generateId(), point, true);
-    }
-
-
-    public boolean destroy(GameObject object) {
-        object.destroy();
-        if (object.isDeleted())
-            idGen.addDeletedId(object.getId());
-        return object.isDestroyed();
     }
 }

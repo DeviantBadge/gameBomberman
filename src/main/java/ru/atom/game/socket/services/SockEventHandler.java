@@ -20,7 +20,6 @@ import java.util.Map;
 
 @Service
 public class SockEventHandler extends TextWebSocketHandler {
-    // TODO MAKE ANOTHER ORDER CREATION, REMAKE CREATION OF PLAYERS - THEY HAVE TO BE CREATED ONLY IN CONNECTION POOL
 
     private static Logger log = LoggerFactory.getLogger(SockEventHandler.class);
 

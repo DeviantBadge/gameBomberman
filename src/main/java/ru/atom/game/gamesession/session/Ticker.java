@@ -61,20 +61,4 @@ public abstract class Ticker implements Runnable {
     public boolean isStopped() {
         return stopped;
     }
-
-    public long getTickNumber() {
-        return tickNumber;
-    }
-
-    public long getPastLoopStarted() {
-        return pastLoopStarted;
-    }
-
-    public long getFRAME_TIME() {
-        return FRAME_TIME;
-    }
-
-    public void incTickAmount() {
-        tickNumber ++;
-    }
 }

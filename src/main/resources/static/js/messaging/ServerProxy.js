@@ -6,6 +6,8 @@ var ServerProxy = function () {
     };
 };
 
+
+
 ServerProxy.prototype.setupMessaging = function() {
     var self = this;
     gInputEngine.subscribe('up', function () {
@@ -34,6 +36,8 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
         + "&gameId=" + gGameEngine.gameId
     );
     var self = this;
+    var prepared = false;
+
     this.socket.onmessage = function (event) {
         var msg = JSON.parse(event.data);
         if (self.handler[msg.topic] === undefined) {
@@ -44,16 +48,16 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
 
     this.socket.onopen = function () {
         console.log("Connected");
-        /*
+        while (!prepared){
+        }
+
         var template = {
-            topic: "CONNECT",
+            topic: "READY",
             gameId: gGameEngine.gameId,
             data: {
-                name: gGameEngine.playerName
             }
         };
         self.socket.send(JSON.stringify(template));
-        */
     };
 
     this.socket.onclose = function (event) {
@@ -65,4 +69,5 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
     };
 
     this.setupMessaging();
+    prepared = true;
 };

@@ -1,16 +1,15 @@
 package ru.atom.game.gamesession.session;
 
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.WebSocketSession;
 import ru.atom.game.enums.IncomingTopic;
 import ru.atom.game.gamesession.lists.OnlinePlayer;
-import ru.atom.game.gamesession.lists.OrderList;
+import ru.atom.game.gamesession.lists.order.OrderList;
 import ru.atom.game.gamesession.lists.PlayersList;
 import ru.atom.game.socket.message.request.IncomingMessage;
 import ru.atom.game.objects.base.util.IdGen;
-import ru.atom.game.gamesession.lists.Order;
-import ru.atom.game.socket.message.request.messagedata.Name;
-import ru.atom.game.socket.util.JsonHelper;
+import ru.atom.game.gamesession.lists.order.Order;
+
+import java.util.List;
 
 public abstract class OnlineSession extends Ticker {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(OnlineSession.class);
@@ -42,15 +41,14 @@ public abstract class OnlineSession extends Ticker {
             return false;
         }
 
-        // todo think about how to create order and realise that !! (now its better, then it was, but how we will handle it in chat?)
-        putOrder(new Order(playerNum, IncomingTopic.CONNECT));
+        orderList.newOrder(playerNum, IncomingTopic.CONNECT);
         return true;
     }
 
     public void addOrder(OnlinePlayer player, IncomingMessage message) {
-        Order order = buildOrder(player, message);
-        if (order != null)
-            putOrder(order);
+        if (!checkMessage(player, message))
+            return;
+        orderList.newOrder(playerNum(player), message);
     }
 
     @Override
@@ -60,26 +58,35 @@ public abstract class OnlineSession extends Ticker {
     }
 
     private void performOrders() {
-        int size = ordersAmount();
-        for (int i = 0; i < size; i++) {
-            Order order = pollOrder();
-            if (order == null)
-                return;
-            carryOut(order);
-        }
+        List<Order> orders = orderList.getOrders();
+        orders.forEach(this::carryOut);
     }
 
     protected abstract void carryOut(Order order);
 
     protected abstract void performTick(long ms);
 
-    protected Order buildOrder(OnlinePlayer player, IncomingMessage message) {
+    protected boolean checkMessage(OnlinePlayer player, IncomingMessage message) {
         int playerNum = playerNum(player);
         if (playerNum < 0) {
             log.warn("Player isn`t in this group. Group id - " + getId());
-            return null;
+            return false;
         }
-        return new Order(playerNum, message);
+
+        return true;
+    }
+
+    @Override
+    protected void onStop() {
+        clearId();
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    private void clearId() {
+        idGen.addDeletedId(getId());
     }
 
     // **********************
@@ -98,6 +105,10 @@ public abstract class OnlineSession extends Ticker {
         playersList.sendAll(data);
     }
 
+    protected void sendTo(OnlinePlayer player, String data) {
+        playersList.sendTo(player, data);
+    }
+
     protected void sendTo(int playerNum, String data) {
         if (playerNum < 0 || playerNum >= playersList.size())
             return;
@@ -110,6 +121,7 @@ public abstract class OnlineSession extends Ticker {
 
     public void addPlayer(OnlinePlayer player) {
         playersList.addPlayer(player);
+        orderList.newPlayer();
     }
 
     public boolean isFull() {
@@ -120,6 +132,7 @@ public abstract class OnlineSession extends Ticker {
 
     protected void removePlayer(int playerNum) {
         playersList.removePlayer(playerNum);
+        orderList.removePlayer(playerNum);
     }
 
 
@@ -127,28 +140,7 @@ public abstract class OnlineSession extends Ticker {
     // orders list functions
     // **********************
 
-    protected Order pollOrder() {
-        return orderList.getOrder();
-    }
-
-    protected void putOrder(Order order) {
-        orderList.add(order);
-    }
-
-    protected int ordersAmount() {
-        return orderList.size();
-    }
-
-    @Override
-    protected void onStop() {
-        clearId();
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    private void clearId() {
-        idGen.addDeletedId(getId());
+    protected void clearOrders() {
+        orderList.clear();
     }
 }

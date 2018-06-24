@@ -40,7 +40,7 @@ public class MatchMaker {
                 // .setBlowStopsOnWall(false)
                 .setSpeedOnStart(3)
                 .setBonusProbability(1)
-                .setProbabilities(1,1,1)
+                .setProbabilities(0.4,1,1)
                 .setPlayerStopsPlayer(true)
                 .setBombBlowAsOne(false);
         GameSession session = sessionRepo.pollOrCreateCommonSession(creator.createProperties());

@@ -1,4 +1,4 @@
-package ru.atom.game.gamesession.session;
+package ru.atom.game.gamesession.session.processors;
 
 import ru.atom.game.enums.ObjectType;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
@@ -44,12 +44,11 @@ public class CollisionProcessor {
                                 pawn.incSpeedBonus();
                                 break;
                         }
-                        // todo - destroying object not with creator as in other places
                         ((Bonus) object).pickUp();
                         changed = true;
                         break;
+
                     case Pawn:
-                        break;
                     case Bomb:
                     case Fire:
                     case Wall:

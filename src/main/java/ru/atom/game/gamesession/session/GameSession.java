@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.atom.game.enums.Direction;
 import ru.atom.game.enums.MessageType;
 import ru.atom.game.gamesession.lists.OnlinePlayer;
+import ru.atom.game.gamesession.lists.WaitingPlayersList;
+import ru.atom.game.gamesession.session.processors.BombProcessor;
+import ru.atom.game.gamesession.session.processors.MovingProcessor;
 import ru.atom.game.repos.ConnectionPool;
 import ru.atom.game.socket.message.response.OutgoingMessage;
 import ru.atom.game.socket.message.response.messagedata.Possess;
@@ -16,12 +19,11 @@ import ru.atom.game.objects.base.GameObject;
 import ru.atom.game.gamesession.state.GameState;
 import ru.atom.game.objects.ingame.Bonus;
 import ru.atom.game.objects.ingame.Pawn;
-import ru.atom.game.gamesession.lists.Order;
+import ru.atom.game.gamesession.lists.order.Order;
 import ru.atom.game.gamesession.properties.GameSessionProperties;
 import ru.atom.game.repos.GameSessionRepo;
 import ru.atom.game.socket.util.JsonHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -36,7 +38,6 @@ public class GameSession extends OnlineSession {
     private ConnectionPool connections;
 
     private GameState gameState;
-    private List<Cell> changedCells;
 
     // i wanna create game settings, for this i have to create some properties
     private GameSessionProperties properties;
@@ -45,13 +46,13 @@ public class GameSession extends OnlineSession {
     private final MovingProcessor movingProcessor;
     private final BombProcessor bombProcessor;
 
+    private final WaitingPlayersList waitingDeisconnect;
+
     // add objects to replica where we change them
     private Replica replica;
     // todo - idea, objects have hp, lasers and other mechanics
 
     //TODO mb add something like game type - deathMatch singleLife - or it could be made by properties but how ?
-
-    // TODO i dont know how, but part of this code we have to move to another class
 
     // TODO when player disconnects, we have to remember his state and if he reconnects, we check if his sessions are active or not - make it by data bases
 
@@ -65,10 +66,10 @@ public class GameSession extends OnlineSession {
         creator = new ObjectCreator(properties);
         gameState = new GameState(properties, creator);
         replica = new Replica();
-        changedCells = new ArrayList<>();
 
         movingProcessor = new MovingProcessor(properties, gameState);
         bombProcessor = new BombProcessor(properties, gameState, creator, replica);
+        waitingDeisconnect = new WaitingPlayersList(3000);
     }
 
     //**************************
@@ -85,22 +86,41 @@ public class GameSession extends OnlineSession {
 
     @Override
     protected void performTick(long ms) {
-        // todo how to optimize it
-        changedCells.addAll(movingProcessor.movePlayers(ms));
-        changedCells.addAll(bombProcessor.tickBomb(ms));
+        movingProcessor.movePlayers(ms);
+        bombProcessor.tickBomb(ms);
+        servicesTick(ms);
         clearCells();
+    }
+
+    private void servicesTick(long ms) {
+        disconnectWaitingPlayers(ms);
+        if (gameState.isGameEnded()) {
+            if(waitingDeisconnect.waitingTime() <= 0) {
+                stop();
+            }
+        }
+    }
+
+    private void disconnectWaitingPlayers(long ms) {
+        List<OnlinePlayer> players = waitingDeisconnect.tick(ms);
+        players.forEach(player -> {
+            String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU DIED"));
+            sendTo(player, message);
+            connections.unlink(player, this);
+        });
     }
 
     @Override
     protected void carryOut(Order order) {
-        switch (order.getIncomingTopic()) {
+        switch ((order.getIncomingTopic())) {
             case CONNECT:
+                break;
             case READY:
-                // todo implement ready statement
                 // sendTo(order.getPlayerNum(), getPossess());
                 if (playersAmount() < properties.getMaxPlayerAmount()) {
                     sendReplicaTo(order.getPlayerNum(), JsonHelper.toJson(gameState.getFieldReplica()));
                 } else {
+                    clearOrders();
                     String rep = JsonHelper.toJson(gameState.getFieldReplica());
                     for (int i = 0; i < playersAmount(); i++)
                         if (i != order.getPlayerNum())
@@ -140,18 +160,13 @@ public class GameSession extends OnlineSession {
     }
 
     @Override
+    protected void stop() {
+        super.stop();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
-        int lastPlayer = gameState.getAliveNum();
-        if (lastPlayer != -1) {
-            String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU WON"));
-            sendTo(lastPlayer, message);
-
-            // TODO thats what i dislike, it doesnt belong to game process, we have to do it smwhere else
-            // It will be solved when i will create rules to classes and their rights
-            connections.unlink(getPlayer(lastPlayer), this);
-            sessionRepo.onSessionEnd(this);
-        }
     }
 
     @Override
@@ -162,6 +177,7 @@ public class GameSession extends OnlineSession {
 
     // TODO надо четко определить фукционирование и области действия классов, один удаляет сокеты, другой не имеет права с ними работать
     // TODO третий наоборот все делает с сокетами а первым двум только позволяет произвести какие то действия (реакция на событие, не больше)
+    // Все это осложниться тем, что мы будем дисконнектить после определенного события
     @Override
     public void onPlayerDisconnect(OnlinePlayer player) {
         int playerNum = playerNum(player);
@@ -171,41 +187,52 @@ public class GameSession extends OnlineSession {
         } else {
             gameState.getPawns().get(playerNum).die();
             if (areAllDead()) {
-                stop();
+                gameEnded();
             }
         }
     }
 
-    @Override
-    protected void stop() {
-        super.stop();
+    private void gameEnded() {
+        gameState.setGameEnded(true);
+        int lastPlayer = gameState.getAliveNum();
+        if (lastPlayer != -1) {
+            String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU WON"));
+            sendTo(lastPlayer, message);
+
+            // todo я сейчас вижу проблему одну, когда игрок отключается от игры мы его будем отключать от сервера, и нужно будет откючить от других сессий, не будет ли с этим проблем?
+            // TODO thats what i dislike, it doesnt belong to game process, we have to do it smwhere else
+            // It will be solved when i will create rules to classes and their rights
+            connections.unlink(getPlayer(lastPlayer), this);
+            sessionRepo.onSessionEnd(this);
+        }
     }
 
     //**************************
     // GAME LOGIC
     //**************************
 
-    // todo - problem with double destroy (if object will be in two destroyed cells we will destroy him twice)
     private void clearCells() {
-        Cell cell;
-
-        for (int i = 0; i < changedCells.size(); i++) {
-            cell = changedCells.get(i);
-            for (int j = 0; j < cell.getObjects().size(); j++) {
-                onDestroy(cell.getObjects().get(j));
+        gameState.forEachCell(cell -> {
+            if (cell.isChanged()) {
+                List<GameObject> objects = cell.getObjects();
+                int size = objects.size();
+                for (int i = 0; i < size; i++) {
+                    GameSession.this.onDestroy(objects.get(i));
+                }
+                cell.deleteIf(GameObject::isDeleted);
+                cell.setChanged(false);
             }
-        }
-        changedCells.clear();
+        });
     }
 
     private void onDestroy(GameObject object) {
-        if (!object.isDestroyed())
+        if (!object.isDestroyed() || object.isDeleted())
             return;
         switch (object.getType()) {
             case Bonus:
                 if (((Bonus) object).isPickedUp()) {
                     addObjectToReplica(object);
-                    return;
+                    break;
                 }
             case Wood:
                 Cell cell = gameState.get(object.getPosition());
@@ -215,27 +242,32 @@ public class GameSession extends OnlineSession {
                     cell.addObject(bonus);
                     addObjectToReplica(bonus);
                 }
-                return;
+                break;
 
             case Pawn:
+                Pawn pawn = (Pawn) object;
                 if (!gameState.isWarmUp()) {
-                    onPlayerDeath((Pawn) object);
+                    onPlayerDeath(pawn);
                     if (areAllDead()) {
-                        stop();
+                        gameEnded();
                     }
-                } else {
-                    ((Pawn) object).riseAgain();
                 }
-                return;
+                pawn.restore();
+                break;
+
+            case Bomb:
+            case Fire:
+            case Wall:
+                break;
             default:
         }
+        if (object.isDestroyed())
+            object.delete();
     }
 
-    private void onPlayerDeath(Pawn object) {
-        String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU DIED"));
-        int playerNum = gameState.playerNum(object);
-        sendTo(playerNum, message);
-        connections.unlink(getPlayer(playerNum), this);
+    private void onPlayerDeath(Pawn pawn) {
+        pawn.die();
+        waitingDeisconnect.addPlayer(getPlayer(gameState.playerNum(pawn)));
     }
 
     private boolean areAllDead() {

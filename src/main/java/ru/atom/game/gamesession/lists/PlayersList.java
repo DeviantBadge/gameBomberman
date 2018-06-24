@@ -22,16 +22,20 @@ public class PlayersList {
 
     public void sendAll(String data) {
         players.forEach(onlinePlayer -> {
-            try {
-                WebSocketSession socketSession = onlinePlayer.getSocket();
-                if (socketSession != null && socketSession.isOpen())
-                    socketSession.sendMessage(new TextMessage(data));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            sendTo(onlinePlayer, data);
         });
     }
 
+    // todo move it into player
+    public void sendTo(OnlinePlayer player, String data) {
+        try {
+            WebSocketSession socketSession = player.getSocket();
+            if (socketSession != null && socketSession.isOpen())
+                socketSession.sendMessage(new TextMessage(data));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public void sendTo(int playerNum, String data) {
         try {
             WebSocketSession socketSession = players.get(playerNum).getSocket();

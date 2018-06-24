@@ -92,25 +92,9 @@ public class Pawn extends MovingObject {
         return true;
     }
 
-    @Override
-    @JsonIgnore
-    public boolean isDestroyed() {
-        return !isAlive();
-    }
-
-    @Override
-    @JsonIgnore
-    public boolean isDeleted() {
-        return false;
-    }
-
-    @Override
-    public boolean destroy() {
-        die();
-        return true;
-    }
-
     public void riseAgain() {
         alive = true;
     }
+
+
 }

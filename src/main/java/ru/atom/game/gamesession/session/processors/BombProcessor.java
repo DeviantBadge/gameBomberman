@@ -1,4 +1,4 @@
-package ru.atom.game.gamesession.session;
+package ru.atom.game.gamesession.session.processors;
 
 import ru.atom.game.gamesession.properties.GameSessionProperties;
 import ru.atom.game.gamesession.state.GameState;
@@ -17,14 +17,12 @@ public class BombProcessor {
     private final GameState gameState;
     private final ObjectCreator creator;
     private final Replica replica;
-    private final ArrayList<Cell> changedCells;
 
-    BombProcessor(GameSessionProperties properties, GameState gameState, ObjectCreator creator, Replica replica) {
+    public BombProcessor(GameSessionProperties properties, GameState gameState, ObjectCreator creator, Replica replica) {
         this.properties = properties;
         this.gameState = gameState;
         this.creator = creator;
         this.replica = replica;
-        changedCells = new ArrayList<>();
     }
 
     public void plantBombBy(Pawn playerPawn) {
@@ -49,7 +47,7 @@ public class BombProcessor {
         }
     }
 
-    public ArrayList<Cell> tickBomb(long ms) {
+    public void tickBomb(long ms) {
         List<Bomb> bombs = gameState.getBombs();
         List<Bomb> blowIt = new ArrayList<>();
         for (Bomb bomb : bombs) {
@@ -60,7 +58,6 @@ public class BombProcessor {
         }
         blowAll(blowIt);
         bombs.removeIf(Bomb::isDestroyed);
-        return changedCells;
     }
 
     private void blowAll(List<Bomb> blowIt) {
@@ -73,7 +70,7 @@ public class BombProcessor {
                 blowBomb(bomb, nextBlow);
             }
 
-            blowIt.forEach(bomb -> creator.destroy(bomb));
+            blowIt.forEach(Bomb::destroy);
             blowIt = nextBlow;
         } while (blowIt.size() != 0);
     }
@@ -82,7 +79,9 @@ public class BombProcessor {
 
         int x = bomb.getIntX() / 32;
         int y = bomb.getIntY() / 32;
-        blow(gameState.get(x, y), nextBlow);
+        Cell cell = gameState.get(x, y);
+        cell.setChanged(true);
+        blow(cell, nextBlow);
         int blowRange = bomb.getOwner().getBlowRange();
 
         for (int j = 1; j <= blowRange && (y + j) < gameState.getSizeY(); j++) {
@@ -104,7 +103,7 @@ public class BombProcessor {
         bomb.getOwner().decBombCount();
     }
 
-    // todo we add a lot of fires and trying to add cells too often, need to optimise
+    // todo we add a lot of fires - need to optimise
     private boolean blow(Cell cell, List<Bomb> nextBlow) {
         // if we return true we stop blowing !
         boolean destroyed = true;
@@ -114,62 +113,46 @@ public class BombProcessor {
         for (GameObject object : cell.getObjects()) {
             switch (object.getType()) {
                 case Bomb:
-                    // todo remember that boms what blown, and destoy them after this bomb was destroyed !!!
-                    // todo here we get parameter from property, like we wanna stop 2 bombs blowing near, or not
-                    // if we blow as one we have to stop when we hit bomb, else, we continue blowing
-                    // stopDestroying = properties.isBlowStopsOnWall() && (!object.isDestroyed() || properties.isBombBlowAsOne());
-
+                    // todo idea : blow bombs after delay - bomb blown, hit another, another decrease timer and blow after some delay
                     Bomb bomb = (Bomb) object;
-                    if (bomb.isBlown()) {
-                        if (bomb.isDestroyed()) {
-                            stopDestroying = stopDestroying || properties.isBlowStopsOnWall() && properties.isBombBlowAsOne();
-                        } else {
-                            changed = true;
-                            stopDestroying = properties.isBlowStopsOnWall();
-                        }
-                    } else {
+                    if (!bomb.isBlown()) {
                         if (!bomb.isReady()) {
                             bomb.stop();
                             nextBlow.add(bomb);
                             changed = true;
-                            stopDestroying = properties.isBlowStopsOnWall();
                         }
                     }
-                    // stopDestroying = stopDestroying || properties.isBlowStopsOnWall() && (!object.isDestroyed() || properties.isBombBlowAsOne
+                    stopDestroying = stopDestroying
+                            || properties.isBlowStopsOnWall()
+                            && (!object.isDestroyed() || properties.isBombBlowAsOne());
                     break;
 
                 case Bonus:
                 case Wood:
                     stopDestroying = stopDestroying || properties.isBlowStopsOnWall() && (!object.isDestroyed() || properties.isBombBlowAsOne());
                     changed = true;
-                    destroyed = destroyed && creator.destroy(object);
+                    destroyed = destroyed && object.destroy();
                     break;
 
                 case Pawn:
-                    if (gameState.isWarmUp())
-                        continue;
                     changed = true;
-                    destroyed = destroyed && creator.destroy(object);
+                    destroyed = destroyed && object.destroy();
                     break;
 
                 default:
-                    destroyed = destroyed && creator.destroy(object);
+                    destroyed = destroyed && object.destroy();
             }
         }
-        if (changed)
-            addChangedCell(cell);
 
+        if (changed)
+            cell.setChanged(true);
         if (destroyed)
             addObjectToReplica(creator.createFire(cell.getPosition()));
+
         return !destroyed || stopDestroying;
     }
 
     private void addObjectToReplica(GameObject object) {
         replica.addToReplica(object);
-    }
-
-    private void addChangedCell(Cell cell) {
-        if (!changedCells.contains(cell))
-            changedCells.add(cell);
     }
 }

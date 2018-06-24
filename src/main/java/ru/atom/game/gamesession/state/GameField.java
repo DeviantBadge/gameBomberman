@@ -11,6 +11,7 @@ import ru.atom.game.objects.ingame.ObjectCreator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class GameField {
     private static final int X_CELL_SIZE = 32;
@@ -264,5 +265,9 @@ public class GameField {
             }
         }
         return replicables;
+    }
+
+    public void forEach(Consumer<? super Cell> action) {
+        cells.forEach(columns -> columns.forEach(action::accept));
     }
 }

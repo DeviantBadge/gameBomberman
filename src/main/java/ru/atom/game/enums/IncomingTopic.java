@@ -1,9 +1,12 @@
 package ru.atom.game.enums;
 
 public enum IncomingTopic {
-    PLANT_BOMB,
-    MOVE,
-    JUMP,
     CONNECT,
-    READY
+    READY,
+    PLANT_BOMB,
+    JUMP,
+    MOVE;
+    public int getPriority() {
+        return this.ordinal();
+    }
 }

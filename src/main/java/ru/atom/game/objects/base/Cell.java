@@ -8,6 +8,7 @@ import ru.atom.game.objects.base.util.Point;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class Cell {
     private static final Logger log = LoggerFactory.getLogger(Cell.class);
@@ -15,6 +16,7 @@ public class Cell {
     public static final double CELL_SIZE_Y = 32;
     private final List<GameObject> objects = new ArrayList<>();
     private Point point;
+    private boolean changed = false;
 
 
     public Cell(Point point) {
@@ -62,6 +64,14 @@ public class Cell {
                 (center.getY() >= point.getY());
     }
 
+    public void setChanged(boolean changed) {
+        this.changed = changed;
+    }
+
+    public boolean isChanged() {
+        return changed;
+    }
+
     public void deleteDestroyed() {
         objects.removeIf(GameObject::isDestroyed);
     }
@@ -70,4 +80,7 @@ public class Cell {
         return objects.isEmpty();
     }
 
+    public void deleteIf(Predicate<? super GameObject> isDeleted) {
+        objects.removeIf(isDeleted);
+    }
 }
