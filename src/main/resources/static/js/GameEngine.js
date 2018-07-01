@@ -27,12 +27,15 @@ GameEngine.prototype.load = function () {
         self.asset.bonus.bombs = queue.getResult("bonus_bomb");
         self.asset.bonus.explosion = queue.getResult("bonus_explosion");
         self.initCanvas();
+
+        console.log(self.asset.pawn.width);
+        console.log(self.asset.pawn.height);
     });
     queue.loadManifest([
         {id: "pawn", src: "img/betty.png"},
         {id: "tile_grass", src: "img/tile_grass.png"},
         {id: "tile_wall", src: "img/tile_wall.png"},
-        {id: "tile_wood", src: "img/tile_wood.png"},
+        {id: "tile_wood", src: "img/crateWood.png"},
         {id: "bomb", src: "img/bomb.png"},
         {id: "fire", src: "img/fire.png"},
         {id: "bonus_speed", src: "img/bonus_speed.png"},

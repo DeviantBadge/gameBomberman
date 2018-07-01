@@ -57,6 +57,10 @@ public class GameState {
         return pawns;
     }
 
+    // todo im deleting wrong players and do not deleting them right too !!!!!!!!!!!!!!!!!!!!!!!
+    // todo im deleting wrong players and do not deleting them right too !!!!!!!!!!!!!!!!!!!!!!!
+    // todo im deleting wrong players and do not deleting them right too !!!!!!!!!!!!!!!!!!!!!!!
+    // todo im deleting wrong players and do not deleting them right too !!!!!!!!!!!!!!!!!!!!!!!
     private void resetPawns() {
         int pawnAmount = pawns.size();
         getPawns().clear();

@@ -24,11 +24,12 @@ Game.prototype.start = function () {
 };
 
 Game.prototype.update = function () {
-    for (var i = 0; i < this.players.length; i++) {
+    var i;
+    for (i = 0; i < this.players.length; i++) {
         this.players[i].update();
     }
 
-    for (var i = 0; i < this.bombs.length; i++) {
+    for (i = 0; i < this.bombs.length; i++) {
         this.bombs[i].update();
     }
 

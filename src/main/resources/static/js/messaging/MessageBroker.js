@@ -10,9 +10,9 @@ var MessageBroker = function () {
 };
 
 MessageBroker.prototype.handleReplica = function (msg) {
-    console.log(msg);
+    // console.log(msg);
     var gameObjects = JSON.parse(msg.data);
-    console.log(gameObjects);
+    // console.log(gameObjects);
     gGameEngine.game.gc(gameObjects);
 };
 
@@ -37,7 +37,6 @@ MessageBroker.prototype.handlePawn = function(obj) {
         player.alive = obj.alive;
     } else {
         player = new Player(obj.id, position);
-        gGameEngine.game.players.push(player);
     }
 };
 
