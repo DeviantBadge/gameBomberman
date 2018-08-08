@@ -1,4 +1,4 @@
-var GameEngine = function () {
+var GameMaster = function () {
     this.asset = {
         pawn: null,
         bomb: null,
@@ -7,13 +7,60 @@ var GameEngine = function () {
         bonus: {}
     };
 
+    this.gameStage = null;
+    this.gameField = null;
+
     this.playerName = "";
     this.playerPassword = "";
     this.gameId = "";
 };
 
-GameEngine.prototype.load = function () {
-    console.log("Loaded");
+GameMaster.prototype = new CanvasSettings();
+
+GameMaster.prototype.setWidthInTiles = function(width) {
+    this._tiles.w = width.toFixed();
+    this.updateGameSize();
+};
+
+GameMaster.prototype.setHeightInTiles = function(height) {
+    this._tiles.w = height.toFixed();
+    this.updateGameSize();
+};
+
+// size must be as {w: width, h: height}
+GameMaster.prototype.setSizeInTiles = function(size) {
+    this._tiles = size;
+    this.updateGameSize();
+};
+
+GameMaster.prototype.setWidthInPixels = function(width) {
+    this._tiles.w = (width / 32).toFixed();
+    this.updateGameSize();
+};
+
+GameMaster.prototype.setHeightInPixels = function(height) {
+    this._tiles.w = (height / 32).toFixed();
+    this.updateGameSize();
+};
+
+// size must be as {w: width, h: height}
+GameMaster.prototype.setSizeInPixels = function(size) {
+    this._tiles = {
+        w: (size.w / 32).toFixed(),
+        h: (size.h / 32).toFixed()
+    };
+    this.updateGameSize();
+};
+
+GameMaster.prototype.updateGameSize = function() {
+    this.gameStage.canvas.height = this.getHeightInPixel();
+    this.gameStage.canvas.width = this.getWidthInPixel();
+    this.gameField.css('width' , gCanvas.getWidthInPixel() + 'px', 'important');
+    this.gameField.css('height', gCanvas.getHeightInPixel() + 'px', 'important');
+};
+
+
+GameMaster.prototype.load = function () {
     this.stage = loadStage();
 
     var queue = new createjs.LoadQueue();
@@ -29,6 +76,7 @@ GameEngine.prototype.load = function () {
         self.asset.bonus.bombs = queue.getResult("bonus_bomb");
         self.asset.bonus.explosion = queue.getResult("bonus_explosion");
         self.initCanvas();
+        console.log("Loaded");
     });
     queue.loadManifest([
         {id: "pawn", src: "img/betty.png"},
@@ -51,7 +99,7 @@ function loadStage() {
     return stage;
 }
 
-GameEngine.prototype.initCanvas = function () {
+GameMaster.prototype.initCanvas = function () {
     this.menu = new Menu(this.stage);
     this.menu.show();
     this.stage.update();
@@ -61,13 +109,13 @@ GameEngine.prototype.initCanvas = function () {
     this.gui.load();
 };
 
-GameEngine.prototype.startGame = function () {
+GameMaster.prototype.startGame = function () {
     this.menu.hide();
     this.game = new Game(this.stage);
     this.game.start();
 };
 
-GameEngine.prototype.finishGame = function (gameOverText) {
+GameMaster.prototype.finishGame = function (gameOverText) {
     if (this.game !== null) {
         this.game.finish();
         this.game = null;
@@ -76,4 +124,5 @@ GameEngine.prototype.finishGame = function (gameOverText) {
     this.stage.update();
 };
 
-gGameEngine = new GameEngine();
+gGameEngine = new GameMaster();
+GM = new GameMaster();

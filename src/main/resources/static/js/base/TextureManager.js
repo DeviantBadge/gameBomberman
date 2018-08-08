@@ -6,15 +6,9 @@ var TextureManager = function () {
         tile: {},
         bonus: {}
     };
-
-    this.playerName = "";
-    this.playerPassword = "";
-    this.gameId = "";
 };
 
-TextureManager.prototype.load = function () {
-    this.stage = loadStage();
-
+TextureManager.prototype.load = function (afterLoad) {
     var queue = new createjs.LoadQueue();
     var self = this;
     queue.addEventListener("complete", function () {
@@ -27,7 +21,8 @@ TextureManager.prototype.load = function () {
         self.asset.bonus.speed = queue.getResult("bonus_speed");
         self.asset.bonus.bombs = queue.getResult("bonus_bomb");
         self.asset.bonus.explosion = queue.getResult("bonus_explosion");
-        self.initCanvas();
+        if(afterLoad !== undefined)
+            afterLoad();
     });
     queue.loadManifest([
         {id: "pawn", src: "img/betty.png"},
@@ -41,3 +36,5 @@ TextureManager.prototype.load = function () {
         {id: "bonus_explosion", src: "img/bonus_explosion.png"}
     ]);
 };
+
+textureManager = new TextureManager();

@@ -1,25 +1,25 @@
 var CanvasSettings = function () {
     this.tileSize = 32;
-    this.tiles = {
+    this._tiles = {
         w: 27,
         h: 17
     };
 };
 
 CanvasSettings.prototype.getWidthInPixel = function () {
-    return this.tiles.w * this.tileSize;
+    return this._tiles.w * this.tileSize;
 };
 
 CanvasSettings.prototype.getWidthInTiles = function () {
-    return this.tiles.w;
+    return this._tiles.w;
 };
 
 CanvasSettings.prototype.getHeightInPixel = function () {
-    return this.tiles.h * this.tileSize;
+    return this._tiles.h * this.tileSize;
 };
 
 CanvasSettings.prototype.getHeightInTiles = function () {
-    return this.tiles.h;
+    return this._tiles.h;
 };
 
 gCanvas = new CanvasSettings();

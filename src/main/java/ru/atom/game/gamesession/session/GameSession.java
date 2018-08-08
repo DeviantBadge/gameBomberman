@@ -110,6 +110,7 @@ public class GameSession extends OnlineSession {
         });
     }
 
+    // todo игрок дергается когда ставишь бомбу - исправить
     @Override
     protected void carryOut(Order order) {
         switch ((order.getIncomingTopic())) {
