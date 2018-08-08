@@ -8,10 +8,10 @@ var MatchMaker = function (clusterSetting) {
 };
 
 MatchMaker.prototype.getSessionId = function () {
-    gGameEngine.playerName = Math.floor((1 + Math.random()) * 0x10000)
+    GM.playerName = Math.floor((1 + Math.random()) * 0x10000)
         .toString(16)
         .substring(1);
-    var name = "name=" + gGameEngine.playerName;
+    var name = "name=" + GM.playerName;
     this.settings.data = name;
     console.log(this.settings);
 

@@ -30,7 +30,7 @@ Menu.prototype.showGameOver = function (text) {
 Menu.prototype.drawBackground = function () {
     var canvasRect = new createjs.Graphics()
         .beginFill("rgba(0, 0, 0, 0.5)")
-        .drawRect(0, 0, gCanvas.getWidthInPixel(), gCanvas.getHeightInPixel());
+        .drawRect(0, 0, GM.getWidthInPixel(), GM.getHeightInPixel());
 
     var background = new createjs.Shape(canvasRect);
     this.stage.addChild(background);
@@ -39,7 +39,7 @@ Menu.prototype.drawBackground = function () {
 
 Menu.prototype.showGameOverText = function (text) {
     var gameOverText = new createjs.Text(text, "40px Helvetica", "#ff4444");
-    gameOverText.x = (gCanvas.getWidthInPixel() - gameOverText.getMeasuredWidth()) / 2;
+    gameOverText.x = (GM.getWidthInPixel() - gameOverText.getMeasuredWidth()) / 2;
     var shiftFromUpside = 60;
     gameOverText.y = shiftFromUpside;
     this.stage.addChild(gameOverText);
@@ -49,8 +49,8 @@ Menu.prototype.showGameOverText = function (text) {
 Menu.prototype.drawPlayButton = function () {
     var buttonSize = 110;
     // counting central position for this element
-    var buttonX = (gCanvas.getWidthInPixel() - buttonSize) / 2;
-    var buttonY = (gCanvas.getHeightInPixel() - buttonSize) / 2;
+    var buttonX = (GM.getWidthInPixel() - buttonSize) / 2;
+    var buttonY = (GM.getHeightInPixel() - buttonSize) / 2;
 
     this.drawPlayButtonBackground(buttonX, buttonY, buttonSize);
     this.drawPlayButtonText(buttonX, buttonY, buttonSize);
@@ -68,7 +68,7 @@ Menu.prototype.drawPlay = function (x, y, buttonSize) {
     this.setHandCursor(background);
 
     background.addEventListener('click', function() {
-        gGameEngine.startGame()
+        GM.startGame()
     });
 };
 
@@ -83,7 +83,7 @@ Menu.prototype.drawPlay = function (x, y, buttonSize) {
 };
 
 Menu.prototype.drawPawn = function (x, y, buttonSize) {
-    var singleIcon = new createjs.Bitmap(gGameEngine.asset.pawn);
+    var singleIcon = new createjs.Bitmap(textureManager.asset.pawn);
     var pawnIconSize = 48;
     singleIcon.sourceRect = new createjs.Rectangle(0, 0, pawnIconSize, pawnIconSize);
     // counting central position inside background
@@ -105,7 +105,7 @@ Menu.prototype.drawPlayButtonBackground = function (x, y, buttonSize) {
     this.setHandCursor(background);
 
     background.addEventListener('click', function() {
-        gGameEngine.startGame()
+        GM.startGame()
     });
 };
 
@@ -120,7 +120,7 @@ Menu.prototype.drawPlayButtonText = function (x, y, buttonSize) {
 };
 
 Menu.prototype.drawPawnIcon = function (x, y, buttonSize) {
-    var singleIcon = new createjs.Bitmap(gGameEngine.asset.pawn);
+    var singleIcon = new createjs.Bitmap(textureManager.asset.pawn);
     var pawnIconSize = 48;
     singleIcon.sourceRect = new createjs.Rectangle(0, 0, pawnIconSize, pawnIconSize);
     // counting central position inside background

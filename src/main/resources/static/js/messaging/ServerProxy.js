@@ -32,8 +32,8 @@ ServerProxy.prototype.setupMessaging = function() {
 
 ServerProxy.prototype.connectToGameServer = function(gameId) {
     this.socket = new SockJS(gClusterSettings.gameServerUrl()
-        + "?name=" + gGameEngine.playerName
-        + "&gameId=" + gGameEngine.gameId
+        + "?name=" + GM.playerName
+        + "&gameId=" + GM.gameId
     );
     var self = this;
     var prepared = false;
@@ -53,7 +53,7 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
 
         var template = {
             topic: "READY",
-            gameId: gGameEngine.gameId,
+            gameId: GM.gameId,
             data: {
             }
         };

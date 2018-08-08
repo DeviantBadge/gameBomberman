@@ -13,11 +13,11 @@ MessageBroker.prototype.handleReplica = function (msg) {
     // console.log(msg);
     var gameObjects = JSON.parse(msg.data);
     // console.log(gameObjects);
-    gGameEngine.game.gc(gameObjects);
+    GM.game.gc(gameObjects);
 };
 
 MessageBroker.prototype.handleGameOver = function (msg) {
-    gGameEngine.finishGame(msg.data);
+    GM.finishGame(msg.data);
 };
 
 MessageBroker.prototype.handlePossess = function (msg) {
@@ -25,7 +25,7 @@ MessageBroker.prototype.handlePossess = function (msg) {
 };
 
 MessageBroker.prototype.handlePawn = function(obj) {
-    var player = gGameEngine.game.players.find(function (el) {
+    var player = GM.game.players.find(function (el) {
         return el.id === obj.id;
     });
     var position = gMessageBroker.mirrorPosition(obj.position);
@@ -36,16 +36,16 @@ MessageBroker.prototype.handlePawn = function(obj) {
         player.direction = direction;
         player.alive = obj.alive;
     } else {
-        player = new Player(obj.id, position, gGameEngine.asset.pawn);
+        player = new Player(obj.id, position, textureManager.asset.pawn);
         // here we push to create element at screen
-        gGameEngine.stage.addChild(player.bmp);
+        GM.gameStage.addChild(player.bmp);
         // here we push to array of object, to use it in future
-        gGameEngine.game.players.push(player);
+        GM.game.players.push(player);
     }
 };
 
 MessageBroker.prototype.handleBomb = function(obj) {
-    var bomb = gGameEngine.game.bombs.find(function (el) {
+    var bomb = GM.game.bombs.find(function (el) {
         return el.id === obj.id;
     });
     var position = gMessageBroker.mirrorPosition(obj.position);
@@ -54,16 +54,16 @@ MessageBroker.prototype.handleBomb = function(obj) {
         bomb.bmp.x = position.x;
         bomb.bmp.y = position.y;
     } else {
-        bomb = new Bomb(obj.id, position, gGameEngine.asset.bomb);
+        bomb = new Bomb(obj.id, position, textureManager.asset.bomb);
         // here we push to create element at screen
-        gGameEngine.stage.addChild(bomb.bmp);
+        GM.gameStage.addChild(bomb.bmp);
         // here we push to array of object, to use it in future
-        gGameEngine.game.bombs.push(bomb);
+        GM.game.bombs.push(bomb);
     }
 };
 
 MessageBroker.prototype.handleBonus = function(obj) {
-    var bonus = gGameEngine.game.bonuses.find(function (el) {
+    var bonus = GM.game.bonuses.find(function (el) {
         return el.id === obj.id;
     });
     var position = gMessageBroker.mirrorPosition(obj.position);
@@ -75,26 +75,26 @@ MessageBroker.prototype.handleBonus = function(obj) {
 
         switch (obj.bonusType) {
             case 'SPEED':
-                bonus = new Bonus(obj.id, position, gGameEngine.asset.bonus.speed);
+                bonus = new Bonus(obj.id, position, textureManager.asset.bonus.speed);
                 break;
             case 'BOMBS':
-                bonus = new Bonus(obj.id, position, gGameEngine.asset.bonus.bombs);
+                bonus = new Bonus(obj.id, position, textureManager.asset.bonus.bombs);
                 break;
             case 'RANGE':
-                bonus = new Bonus(obj.id, position, gGameEngine.asset.bonus.explosion);
+                bonus = new Bonus(obj.id, position, textureManager.asset.bonus.explosion);
                 break;
             default:
                 console.error('Smth was wrong with bonus types!');
                 throw "Smth was wrong with bonus types!";
         }
 
-        gGameEngine.stage.addChild(bonus.bmp);
-        gGameEngine.game.bonuses.push(bonus);
+        GM.gameStage.addChild(bonus.bmp);
+        GM.game.bonuses.push(bonus);
     }
 };
 
 MessageBroker.prototype.handleTile = function (obj) {
-    var tile = gGameEngine.game.tiles.find(function (el) {
+    var tile = GM.game.tiles.find(function (el) {
         return el.id === obj.id;
     });
     // console.log(tile);
@@ -104,44 +104,44 @@ MessageBroker.prototype.handleTile = function (obj) {
     } else {
         switch (obj.type) {
             case 'Wall':
-                tile = new Tile(obj.id, position, gGameEngine.asset.tile.wall);
+                tile = new Tile(obj.id, position, textureManager.asset.tile.wall);
                 break;
             case 'Wood':
-                tile = new Tile(obj.id, position, gGameEngine.asset.tile.wood);
+                tile = new Tile(obj.id, position, textureManager.asset.tile.wood);
                 break;
             default:
                 break;
         }
 
-        gGameEngine.stage.addChild(tile.bmp);
-        gGameEngine.game.tiles.push(tile);
+        GM.gameStage.addChild(tile.bmp);
+        GM.game.tiles.push(tile);
     }
 };
 
 MessageBroker.prototype.handleFire = function (obj) {
-    var fire = gGameEngine.game.fires.find(function (el) {
+    var fire = GM.game.fires.find(function (el) {
         return el.id === obj.id;
     });
 
     var position = gMessageBroker.mirrorPosition(obj.position);
     if (!fire) {
-        fire = new Fire(obj.id, position, gGameEngine.asset.fire);
-        gGameEngine.stage.addChild(fire.bmp);
-        gGameEngine.game.fires.push(fire);
+        fire = new Fire(obj.id, position, textureManager.asset.fire);
+        GM.gameStage.addChild(fire.bmp);
+        GM.game.fires.push(fire);
     }
 };
 
 MessageBroker.prototype.mirrorPosition = function (origin) {
     return {
         x: origin.x,
-        y: -origin.y + gCanvas.getHeightInPixel() - gCanvas.tileSize
+        y: -origin.y + GM.getHeightInPixel() - GM.getTileSize()
     }
 };
 
 MessageBroker.prototype.move = function (direction) {
     var template = {
         topic: "MOVE",
-        gameId: gGameEngine.gameId,
+        gameId: GM.gameId,
         data: {
             direction: direction.toUpperCase()
         }
@@ -153,7 +153,7 @@ MessageBroker.prototype.move = function (direction) {
 MessageBroker.prototype.plantBomb = function () {
     var template = {
         topic: "PLANT_BOMB",
-        gameId: gGameEngine.gameId,
+        gameId: GM.gameId,
         data: {}
     };
 
@@ -164,7 +164,7 @@ MessageBroker.prototype.plantBomb = function () {
 MessageBroker.prototype.jump = function () {
     var template = {
         topic: "JUMP",
-        gameId: gGameEngine.gameId,
+        gameId: GM.gameId,
         data: {}
     };
     return JSON.stringify(template);

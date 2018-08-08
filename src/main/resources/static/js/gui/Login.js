@@ -1,8 +1,39 @@
-var LoginWindow = function (clusterSettings) {
-    this.loginBackground = $("#login-background");
-    this.loginWindow = $("#loginWindow");
+// ***********************************************
+// we can init in constructor here, because we
+// don`t create an instance of loginWindow while
+// page is loading
+// ***********************************************
+
+// todo or may be move this code to initialisation?
+var LoginWindow = function () {
+    this.loginBackground = null;
+    this.loginWindow = null;
+    this.loginCard = null;
+    this.registerCard = null;
     this.disposed = false;
     this.initialized = false;
+
+    this.loginCanvas = null;
+    this.loginStage = null;
+
+    this.signInRequest = null;
+
+    this.registerRequest = null;
+};
+
+LoginWindow.prototype.initialize = function (clusterSettings) {
+    if(this.initialized)
+        return;
+    this.initialized = true;
+
+    this.loginBackground = $("#login-background");
+    this.loginWindow = $("#loginWindow");
+    this.loginCard = $("#loginCard");
+    this.registerCard = $("#registerCard");
+
+    this.loginCanvas = null;
+    this.loginStage = null;
+    this.initStage();
 
     this.signInRequest = {
         url: clusterSettings.signInUrl(),
@@ -19,21 +50,31 @@ var LoginWindow = function (clusterSettings) {
         crossDomain: true,
         async: true
     };
+
+    this.initWindowAnimation();
+};
+
+LoginWindow.prototype.initStage = function () {
+    this.loginCanvas = $("#loginCanvas");
+    this.loginStage = new createjs.Stage("loginCanvas");
+    this.loginStage.canvas.width = this.loginCanvas.width();
+    this.loginStage.canvas.height = this.loginCanvas.height();
+    this.loginStage.enableMouseOver();
 };
 
 LoginWindow.prototype.openRegister = function () {
     console.log("register opened");
-    $("#loginCard").css("display", "none");
-    $("#registerCard").css("display", "block");
+    this.loginCard.css("display", "none");
+    this.registerCard.css("display", "block");
 };
 
 LoginWindow.prototype.openSignIn = function () {
     console.log("sign in opened");
-    $("#loginCard").css("display", "block");
-    $("#registerCard").css("display", "none");
+    this.loginCard.css("display", "block");
+    this.registerCard.css("display", "none");
 };
 
-LoginWindow.prototype.openWin = function () {
+LoginWindow.prototype.toggleWindow = function () {
     if(this.disposed) {
         this.loginBackground.appendTo('#game');
         this.loginBackground.toggleClass("transparent");
@@ -46,15 +87,18 @@ LoginWindow.prototype.openWin = function () {
     }
 };
 
-LoginWindow.prototype.initialize = function () {
-    if(this.initialized)
-        return;
-    this.initialized = true;
+LoginWindow.prototype.initWindowAnimation = function () {
+    var singleIcon = new createjs.Bitmap(textureManager.asset.pawn);
+    var pawnIconSize = 48;
+    singleIcon.sourceRect = new createjs.Rectangle(0, 0, pawnIconSize, pawnIconSize);
+    singleIcon.x = 0;
+    singleIcon.y = 0;
+    this.loginStage.addChild(singleIcon);
+    this.loginStage.update();
 };
 
 LoginWindow.prototype.signIn = function () {
     // fire request
-
     console.log("signing in");
     var playerName = $("#inputUsername").val();
     var playerPassword = $("#inputPassword").val();
@@ -68,8 +112,8 @@ LoginWindow.prototype.signIn = function () {
 
     $.ajax(this.signInRequest).done(function(id) {
         console.log("signed In");
-        gGameEngine.playerName = playerName;
-        gGameEngine.playerPassword = playerPassword;
+        GM.playerName = playerName;
+        GM.playerPassword = playerPassword;
     }).fail(function (jqXHR, textStatus) {
         alert("Failed to Sign In");
     });
@@ -77,7 +121,6 @@ LoginWindow.prototype.signIn = function () {
 
 LoginWindow.prototype.register = function () {
     // fire request
-
     console.log("registering");
     var playerName = $("#newUsername").val();
     var playerPassword = $("#newUserPassword").val();
@@ -93,12 +136,9 @@ LoginWindow.prototype.register = function () {
 
     $.ajax(this.registerRequest).done(function(id) {
         console.log("This lobby id - " + id);
-        gGameEngine.playerName = playerName;
-        gGameEngine.playerPassword = playerPassword;
+        GM.playerName = playerName;
+        GM.playerPassword = playerPassword;
     }).fail(function (jqXHR, textStatus) {
         alert("Failed to Register");
     });
 };
-
-
-var loginWin = null;

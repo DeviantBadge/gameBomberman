@@ -13,7 +13,7 @@ var Game = function (stage) {
 Game.prototype.start = function () {
     gInputEngine.setupBindings();
     var gameId = gMatchMaker.getSessionId();
-    gGameEngine.gameId = gameId;
+    GM.gameId = gameId;
     this.serverProxy.connectToGameServer(gameId);
     this.drawBackground();
 
@@ -52,11 +52,11 @@ Game.prototype.finish = function () {
 
 
 Game.prototype.drawBackground = function () {
-    for (var i = 0; i < gCanvas.getWidthInTiles(); i++) {
-        for (var j = 0; j < gCanvas.getHeightInTiles(); j++) {
-            var bitmap = new createjs.Bitmap(gGameEngine.asset.tile.grass);
-            bitmap.x = i * gCanvas.tileSize;
-            bitmap.y = j * gCanvas.tileSize;
+    for (var i = 0; i < GM.getWidthInTiles(); i++) {
+        for (var j = 0; j < GM.getHeightInTiles(); j++) {
+            var bitmap = new createjs.Bitmap(textureManager.asset.tile.grass);
+            bitmap.x = i * GM.getTileSize();
+            bitmap.y = j * GM.getTileSize();
             this.stage.addChild(bitmap);
         }
     }
@@ -68,7 +68,6 @@ Game.prototype.gc = function (gameObjects) {
     for (var i = 0; i < gameObjects.length; i++) {
         var wasDeleted = false;
         var obj = gameObjects[i];
-        // console.log(obj);
 
         if (obj.type === 'Pawn' || obj.type === 'Bomb') {
             gMessageBroker.handler[obj.type](obj);
@@ -87,7 +86,7 @@ Game.prototype.gc = function (gameObjects) {
             }
         });
 
-        if (!wasDeleted && obj.type !== 'Pawn') {
+        if (!wasDeleted) {
             gMessageBroker.handler[obj.type](obj);
         }
     }

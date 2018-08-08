@@ -1,11 +1,11 @@
 var TextureProperty = function () {
     this._aligned = false;
-    this._alignWidth = gCanvas.tileSize;
-    this._alignHeight = gCanvas.tileSize;
+    this._alignWidth = GM.getTileSize();
+    this._alignHeight = GM.getTileSize();
 
     this._resized = false;
-    this._width = gCanvas.tileSize;
-    this._height = gCanvas.tileSize;
+    this._width = GM.getTileSize();
+    this._height = GM.getTileSize();
 };
 
 TextureProperty.prototype.setAligned = function (bool) {

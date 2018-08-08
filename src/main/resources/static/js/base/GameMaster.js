@@ -7,6 +7,8 @@ var GameMaster = function () {
         bonus: {}
     };
 
+    this.menu = null;
+    this.game = null;
     this.gameStage = null;
     this.gameField = null;
 
@@ -14,6 +16,10 @@ var GameMaster = function () {
     this.playerPassword = "";
     this.gameId = "";
 };
+
+// ************************************************
+// here we change size of game field
+// ************************************************
 
 GameMaster.prototype = new CanvasSettings();
 
@@ -55,63 +61,42 @@ GameMaster.prototype.setSizeInPixels = function(size) {
 GameMaster.prototype.updateGameSize = function() {
     this.gameStage.canvas.height = this.getHeightInPixel();
     this.gameStage.canvas.width = this.getWidthInPixel();
-    this.gameField.css('width' , gCanvas.getWidthInPixel() + 'px', 'important');
-    this.gameField.css('height', gCanvas.getHeightInPixel() + 'px', 'important');
+    this.gameField.css('width' , this.getWidthInPixel() + 'px', 'important');
+    this.gameField.css('height', this.getHeightInPixel() + 'px', 'important');
 };
 
 
-GameMaster.prototype.load = function () {
-    this.stage = loadStage();
+// ************************************************
+// load
+// ************************************************
 
-    var queue = new createjs.LoadQueue();
-    var self = this;
-    queue.addEventListener("complete", function () {
-        self.asset.pawn = queue.getResult("pawn");
-        self.asset.tile.grass = queue.getResult("tile_grass");
-        self.asset.tile.wall = queue.getResult("tile_wall");
-        self.asset.tile.wood = queue.getResult("tile_wood");
-        self.asset.bomb = queue.getResult("bomb");
-        self.asset.fire = queue.getResult("fire");
-        self.asset.bonus.speed = queue.getResult("bonus_speed");
-        self.asset.bonus.bombs = queue.getResult("bonus_bomb");
-        self.asset.bonus.explosion = queue.getResult("bonus_explosion");
-        self.initCanvas();
-        console.log("Loaded");
-    });
-    queue.loadManifest([
-        {id: "pawn", src: "img/betty.png"},
-        {id: "tile_grass", src: "img/tile_grass.png"},
-        {id: "tile_wall", src: "img/tile_wall.png"},
-        {id: "tile_wood", src: "img/crateWood.png"},
-        {id: "bomb", src: "img/bomb.png"},
-        {id: "fire", src: "img/fire.png"},
-        {id: "bonus_speed", src: "img/bonus_speed.png"},
-        {id: "bonus_bomb", src: "img/bonus_bomb.png"},
-        {id: "bonus_explosion", src: "img/bonus_explosion.png"}
-    ]);
+GameMaster.prototype.load = function () {
+    this.gameStage = loadStage();
+    this.gameField = $("#game");
+
+    this.updateGameSize();
+    this.initCanvas();
 };
 
 function loadStage() {
     var stage = new createjs.Stage("canvas");
-    stage.canvas.width = gCanvas.getWidthInPixel();
-    stage.canvas.height = gCanvas.getHeightInPixel();
     stage.enableMouseOver();
     return stage;
 }
 
 GameMaster.prototype.initCanvas = function () {
-    this.menu = new Menu(this.stage);
+    this.menu = new Menu(this.gameStage);
     this.menu.show();
-    this.stage.update();
-
-
-    this.gui = new FirstGui();
-    this.gui.load();
+    this.gameStage.update();
 };
+
+// ************************************************
+// here we manage our game state
+// ************************************************
 
 GameMaster.prototype.startGame = function () {
     this.menu.hide();
-    this.game = new Game(this.stage);
+    this.game = new Game(this.gameStage);
     this.game.start();
 };
 
@@ -121,8 +106,7 @@ GameMaster.prototype.finishGame = function (gameOverText) {
         this.game = null;
     }
     this.menu.showGameOver(gameOverText);
-    this.stage.update();
+    this.gameStage.update();
 };
 
-gGameEngine = new GameMaster();
 GM = new GameMaster();

@@ -11,9 +11,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
 
-    <!-- Angular module -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
-
     <!-- sockjs module -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 
@@ -24,32 +21,35 @@
 
     <script src="js/settings/ClusterSettings.js"></script>
     <script src="js/settings/CanvasSettings.js"></script>
-    <script src="js/gui/Menu.js"></script>
+
+    <script src="js/base/GameMaster.js"></script>
+    <script src="js/base/GameLoader.js"></script>
+    <script src="js/base/TextureManager.js"></script>
+
     <script src="js/game/TextureProperty.js"></script>
+    <script src="js/game/Bomb.js"></script>
+    <script src="js/game/Bonus.js"></script>
+    <script src="js/game/Fire.js"></script>
     <script src="js/game/Game.js"></script>
     <script src="js/game/Player.js"></script>
-    <script src="js/game/Bonus.js"></script>
     <script src="js/game/Tile.js"></script>
-    <script src="js/game/Fire.js"></script>
-    <script src="js/game/Bomb.js"></script>
+
+    <script src="js/gui/FirstGui.js"></script>
+    <script src="js/gui/LoadingScreen.js"></script>
+    <script src="js/gui/Login.js"></script>
+    <script src="js/gui/Menu.js"></script>
+
+    <script src="js/messaging/MatchMaker.js"></script>
     <script src="js/messaging/MessageBroker.js"></script>
     <script src="js/messaging/ServerProxy.js"></script>
+
     <script src="js/InputEngine.js"></script>
-    <script src="js/base/GameMaster.js"></script>
-    <script src="js/gui/LoadingScreen.js"></script>
-    <script src="js/gui/FirstGui.js"></script>
-    <script src="js/gui/Login.js"></script>
-    <script src="js/messaging/MatchMaker.js"></script>
-
-
-    <script src="js/angular/App.js"></script>
-    <script src="js/angular/Controller.js"></script>
 
     <link rel="stylesheet" topic="text/css" href="css/bootstrap.css" />
     <link rel="stylesheet" topic="text/css" href="css/style.css" />
     <link rel="stylesheet" topic="text/css" href="css/signin.css" />
 </head>
-<body onload="gGameEngine.load()">
+<body onload="gameLoader.loadAll()">
 <div class="container">
     <div class="page-header"></div>
     <div id="game" ng-app="App" ng-controller="Ctrl" style="position: relative; overflow:hidden; z-index: 2000;">
@@ -74,8 +74,8 @@
                                     <input type="password" id="newUserPassword" class="form-control" placeholder="Password" required="">
                                     <label for="newUserPasswordCopy" class="sr-only">Password copy</label>
                                     <input type="password" id="newUserPasswordCopy" class="form-control" placeholder="Password copy" required="">
-                                    <button type="button" onclick="loginWin.register()"       class="btn btn-lg btn-primary btn-block"style="margin-top: 30px">Register</button>
-                                    <button type="button" onclick="loginWin.openSignIn()" class="btn btn-lg btn-block btn-outline-primary">Sign in</button>
+                                    <button type="button" onclick="loginWindow.register()" class="btn btn-lg btn-primary btn-block" style="margin-top: 30px">Register</button>
+                                    <button type="button" onclick="loginWindow.openSignIn()" class="btn btn-lg btn-block btn-outline-primary">Sign in</button>
                                 </form>
                             </div>
                         </div>
@@ -90,8 +90,8 @@
                                     <input type="text" id="inputUsername" class="form-control" placeholder="Username" required="" autofocus="">
                                     <label for="inputPassword" class="sr-only">Password</label>
                                     <input type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
-                                    <button type="button" onclick="loginWin.signIn()"       class="btn btn-lg btn-primary btn-block" style="margin-top: 30px">Sign in</button>
-                                    <button type="button" onclick="loginWin.openRegister()" class="btn btn-lg btn-block btn-outline-primary">Register</button>
+                                    <button type="button" onclick="loginWindow.signIn()" class="btn btn-lg btn-primary btn-block" style="margin-top: 30px">Sign in</button>
+                                    <button type="button" onclick="loginWindow.openRegister()" class="btn btn-lg btn-block btn-outline-primary">Register</button>
                                 </form>
                             </div>
                         </div>
@@ -117,7 +117,7 @@
         </div>
     </div>
 </div>
-<button onclick="loginWin.openWin()">Hhahahahh</button>
+<button onclick="GUI.loginWindow.toggleWindow()">Hhahahahh</button>
 
 </body>
 

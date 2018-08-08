@@ -1,58 +1,61 @@
 var LoadingScreen = function () {
     this.initialized = false;
-
-};
-
-LoadingScreen.prototype.loadStage = function () {
-    var stage = new createjs.Stage("loadingScreen");
-    stage.canvas.width = this.loadingCanvas.width();
-    stage.canvas.height = this.loadingCanvas.height();
-    stage.enableMouseOver();
-    var self = this;
-    // todo centralise that
-    createjs.Ticker.addEventListener('tick', function () {
-        stage.update();
-    });
-    return stage;
-};
-
-LoadingScreen.prototype.initBoy = function () {
-
-    var pawn = new Player(0, {x: 0, y: 0}, gGameEngine.asset.pawn);
-    pawn.animate("right");
-    this.stage.addChild(pawn.bmp);
-    this.stage.update();
-    console.log(this.stage.canvas.width);
-    console.log(this.stage.canvas.height);
-};
-
-LoadingScreen.prototype.drawBackground = function () {
-    var canvasRect = new createjs.Graphics()
-        .beginFill("rgba(0, 0, 0, 0.5)")
-        .drawRect(0, 0, this.stage.canvas.width, this.stage.canvas.height);
-
-    var background = new createjs.Shape(canvasRect);
-    this.stage.addChild(background);
+    this.disposed = false;
+    this.loadingCanvas = null;
+    this.loadingStage = null;
 };
 
 LoadingScreen.prototype.initialize = function () {
     if(this.initialized)
         return;
     this.initialized = true;
-    this.loadingCanvas = $("#loadingScreen");
-    this.stage = this.loadStage();
+
+    this.initStage();
     this.drawBackground();
     this.initBoy();
-    console.log(this.stage.canvas.width);
-    console.log(this.stage.canvas.height);
+    this.activateListener(this.loadingStage);
+    this.toggleWindow();
 };
 
-LoadingScreen.prototype.activate = function () {
-    this.loadingCanvas.css("display", "block");
+LoadingScreen.prototype.initStage = function () {
+    this.loadingCanvas = $("#loadingScreen");
+    this.loadingStage = new createjs.Stage("loadingScreen");
+    this.loadingStage.canvas.width = this.loadingCanvas.width();
+    this.loadingStage.canvas.height = this.loadingCanvas.height();
+    this.loadingStage.enableMouseOver();
 };
 
-LoadingScreen.prototype.deactivate = function () {
-    this.loadingCanvas.css("display", "none");
+LoadingScreen.prototype.activateListener = function (stage) {
+    // todo centralise that
+    createjs.Ticker.addEventListener('tick', function () {
+        stage.update();
+    });
 };
 
-var loadScr = null;
+LoadingScreen.prototype.toggleWindow = function () {
+    if(this.disposed) {
+        this.loadingCanvas.css("display", "block");
+        this.disposed = false;
+    } else {
+        this.loadingCanvas.css("display", "none");
+        this.disposed = true;
+    }
+};
+
+LoadingScreen.prototype.initBoy = function () {
+    var pawn = new Player(0, {x: 0, y: 0}, textureManager.asset.pawn);
+    pawn.animate("right");
+    this.loadingStage.addChild(pawn.bmp);
+    this.loadingStage.update();
+    console.log(this.loadingStage.canvas.width);
+    console.log(this.loadingStage.canvas.height);
+};
+
+LoadingScreen.prototype.drawBackground = function () {
+    var canvasRect = new createjs.Graphics()
+        .beginFill("rgba(0, 0, 0, 0.5)")
+        .drawRect(0, 0, this.loadingStage.canvas.width, this.loadingStage.canvas.height);
+
+    var background = new createjs.Shape(canvasRect);
+    this.loadingStage.addChild(background);
+};

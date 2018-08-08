@@ -8,7 +8,7 @@ var TextureManager = function () {
     };
 };
 
-TextureManager.prototype.load = function (afterLoad) {
+TextureManager.prototype.load = function (afterload) {
     var queue = new createjs.LoadQueue();
     var self = this;
     queue.addEventListener("complete", function () {
@@ -21,8 +21,8 @@ TextureManager.prototype.load = function (afterLoad) {
         self.asset.bonus.speed = queue.getResult("bonus_speed");
         self.asset.bonus.bombs = queue.getResult("bonus_bomb");
         self.asset.bonus.explosion = queue.getResult("bonus_explosion");
-        if(afterLoad !== undefined)
-            afterLoad();
+        if(afterload !== undefined)
+            afterload();
     });
     queue.loadManifest([
         {id: "pawn", src: "img/betty.png"},
