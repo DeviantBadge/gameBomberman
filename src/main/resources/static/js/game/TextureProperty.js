@@ -1,27 +1,27 @@
 var TextureProperty = function () {
-    this._align = false;
+    this._aligned = false;
     this._alignWidth = gCanvas.tileSize;
     this._alignHeight = gCanvas.tileSize;
 
-    this._resizeTexture = false;
+    this._resized = false;
     this._width = gCanvas.tileSize;
     this._height = gCanvas.tileSize;
 };
 
-TextureProperty.prototype.setAlign = function (bool) {
-    this._align = bool;
+TextureProperty.prototype.setAligned = function (bool) {
+    this._aligned = bool;
     return this;
 };
-TextureProperty.prototype.getAlign = function () {
-    return this._align;
+TextureProperty.prototype.isAligned = function () {
+    return this._aligned;
 };
 
-TextureProperty.prototype.setResizeTexture = function (bool) {
-    this._resizeTexture = bool;
+TextureProperty.prototype.setResized = function (bool) {
+    this._resized = bool;
     return this;
 };
-TextureProperty.prototype.getResizeTexture = function () {
-    return this._resizeTexture;
+TextureProperty.prototype.isResized = function () {
+    return this._resized;
 };
 
 TextureProperty.prototype.setAlignWidth = function (integer) {

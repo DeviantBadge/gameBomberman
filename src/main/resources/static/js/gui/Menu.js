@@ -90,7 +90,7 @@ Menu.prototype.drawPawn = function (x, y, buttonSize) {
     singleIcon.x = x + (buttonSize - pawnIconSize) / 2;
     var shiftFromUpside = 13;
     singleIcon.y = y + shiftFromUpside;
-    gGameEngine.stage.addChild(singleIcon);
+    this.stage.addChild(singleIcon);
     this.elements.push(singleIcon);
 };
 
@@ -127,7 +127,7 @@ Menu.prototype.drawPawnIcon = function (x, y, buttonSize) {
     singleIcon.x = x + (buttonSize - pawnIconSize) / 2;
     var shiftFromUpside = 13;
     singleIcon.y = y + shiftFromUpside;
-    gGameEngine.stage.addChild(singleIcon);
+    this.stage.addChild(singleIcon);
     this.elements.push(singleIcon);
 };
 

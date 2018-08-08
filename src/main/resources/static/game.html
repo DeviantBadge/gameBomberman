@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+    <title>Bomberman</title>
+    <meta name="description" content="Transmission">
+    <link rel="shortcut icon" topic="image/x-icon" href="favicon.ico">
+
+    <!-- bootstrap settings -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+    <!-- Angular module -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+    <!-- sockjs module -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+
+    <!-- Local stored JS Files -->
+    <script src="js/external/preloadjs-NEXT.combined.js"></script>
+    <script src="js/external/easeljs-NEXT.combined.js"></script>
+    <script src="js/external/jquery-3.3.1.min.js"></script>
+
+    <script src="js/settings/ClusterSettings.js"></script>
+    <script src="js/settings/CanvasSettings.js"></script>
+    <script src="js/gui/Menu.js"></script>
+    <script src="js/game/TextureProperty.js"></script>
+    <script src="js/game/Game.js"></script>
+    <script src="js/game/Player.js"></script>
+    <script src="js/game/Bonus.js"></script>
+    <script src="js/game/Tile.js"></script>
+    <script src="js/game/Fire.js"></script>
+    <script src="js/game/Bomb.js"></script>
+    <script src="js/messaging/MessageBroker.js"></script>
+    <script src="js/messaging/ServerProxy.js"></script>
+    <script src="js/InputEngine.js"></script>
+    <script src="js/base/GameEngine.js"></script>
+    <script src="js/gui/FirstGui.js"></script>
+    <script src="js/messaging/MatchMaker.js"></script>
+
+
+    <script src="js/angular/App.js"></script>
+    <script src="js/angular/Controller.js"></script>
+
+    <link rel="stylesheet" topic="text/css" href="css/bootstrap.css" />
+    <link rel="stylesheet" topic="text/css" href="css/style.css" />
+    <link rel="stylesheet" topic="text/css" href="css/signin.css" />
+</head>
+<body onload="gGameEngine.load()">
+    <div class="container">
+        <div class="page-header"></div>
+        <iframe>
+            <div id="game" ng-app="App" ng-controller="Ctrl" style="position: relative">
+                <canvas id="canvas" style="background-color: gray; "></canvas>
+
+                <!-- todo how to make it better? without such styles, mb use here angular  (canvas must have size same as block, position automatic too) -->
+                <div id="loginWindow" class="card-deck mb-3 text-center"
+                     style="width: 350px; z-index: 2000; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) ">
+                    <canvas id="loginCanvas" style="background-color: rgba(128,0,0,0.3);z-index: 2000;position: absolute;"></canvas>
+                    <div class="card mb-4 box-shadow">
+                        <div class="card-header">
+                            <h4 class="my-0 font-weight-normal">Sign in</h4>
+                        </div>
+                        <div class="card-body" style="z-index: 2001; ">
+                            <form class="form-signin" >
+                                <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+                                <label for="inputEmail" class="sr-only">Email address</label>
+                                <input type="email" id="inputEmai" class="form-control" placeholder="Email address" required="" autofocus="">
+                                <label for="inputPassword" class="sr-only">Password</label>
+                                <input type="password" id="inputPasswor" class="form-control" placeholder="Password" required="">
+                                <div class="checkbox mb-3">
+                                    <label>
+                                        <input type="checkbox" value="remember-me"> Remember me
+                                    </label>
+                                </div>
+                                <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+                                <button type="button" class="btn btn-lg btn-block btn-outline-primary">Sign up for free</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </iframe>
+        <h3>You have only 5 seconds to transmit the bomb, be fast!</h3>
+        <ul>
+            <li><strong>arrow keys</strong> - move</li>
+            <li><strong>spacebar</strong> - jump</li>
+            <li><strong>q</strong> - plant bomb</li>
+        </ul>
+        <hr>
+
+        <div class="footer">
+            <div class="alert alert-success">
+                <img src="img/github.png" width="32">
+            </div>
+        </div>
+    </div>
+</body>
+
+    <form class="form-signin" style="display: none">
+        <img class="mb-4" src="img/betty.png" alt="" width="192" height="240">
+        <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <div class="checkbox mb-3">
+            <label>
+                <input type="checkbox" value="remember-me"> Remember me
+            </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <p class="mt-5 mb-3 text-muted">© 2017-2018</p>
+    </form>
+
+</html>
+<!--
+    <div class="card-deck mb-3 text-center"
+         style="width: 400px; z-index: 2000; position: absolute; right: 20px; top: 20px; ">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">Free</h4>
+            </div>
+            <div class="card-body">
+                <h1 class="card-title pricing-card-title">$0 <small class="text-muted">/ mo</small></h1>
+                <ul class="list-unstyled mt-3 mb-4">
+                    <li>10 users included</li>
+                    <li>2 GB of storage</li>
+                    <li>Email support</li>
+                    <li>Help center access</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+-->

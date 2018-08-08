@@ -8,10 +8,12 @@ var GameEngine = function () {
     };
 
     this.playerName = "";
+    this.playerPassword = "";
     this.gameId = "";
 };
 
 GameEngine.prototype.load = function () {
+    console.log("Loaded");
     this.stage = loadStage();
 
     var queue = new createjs.LoadQueue();
@@ -27,9 +29,6 @@ GameEngine.prototype.load = function () {
         self.asset.bonus.bombs = queue.getResult("bonus_bomb");
         self.asset.bonus.explosion = queue.getResult("bonus_explosion");
         self.initCanvas();
-
-        console.log(self.asset.pawn.width);
-        console.log(self.asset.pawn.height);
     });
     queue.loadManifest([
         {id: "pawn", src: "img/betty.png"},
@@ -56,6 +55,10 @@ GameEngine.prototype.initCanvas = function () {
     this.menu = new Menu(this.stage);
     this.menu.show();
     this.stage.update();
+
+
+    this.gui = new FirstGui();
+    this.gui.load();
 };
 
 GameEngine.prototype.startGame = function () {

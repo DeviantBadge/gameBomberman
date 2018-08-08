@@ -1,6 +1,6 @@
-var Player = function (id, position) {
+var Player = function (id, position, texture) {
     this.id = id;
-    var img = gGameEngine.asset.pawn;
+    var img = texture;
     this.alive = true;
 
     // if you have got unusual pawn, put its size here
@@ -18,22 +18,22 @@ var Player = function (id, position) {
         },
         animations: {
             idle: [0, 0, 'idle'],
-            down: [0, 3, 'down', 0.1],
-            left: [4, 7, 'left', 0.1],
-            up:   [8, 11, 'up', 0.1],
-            right: [12, 15, 'right', 0.1],
+            down: [0, 3, 'down', 0.2],
+            left: [4, 7, 'left', 0.2],
+            up:   [8, 11, 'up', 0.2],
+            right: [12, 15, 'right', 0.2],
             dead: [16, 16, 'dead']
         }
     });
 
     this.bmp = new createjs.Sprite(spriteSheet);
 
-    if(this._properties.getAlign()) {
+    if(this._properties.isAligned()) {
         this.bmp.regX = (size.w - this._properties.getAlignHeight()) / 2;
         this.bmp.regY = (size.h - this._properties.getAlignHeight()) / 2;
     }
 
-    if(this._properties.getResizeTexture()) {
+    if(this._properties.isResized()) {
         this.bmp.scaleX = this._properties.getWidth() / size.w;
         this.bmp.scaleY = this._properties.getHeight()/ size.h;
     }
@@ -43,17 +43,14 @@ var Player = function (id, position) {
 
     // активация анимации
     this.bmp.gotoAndPlay('idle');
-    // here we push to create element at screen
-    gGameEngine.stage.addChild(this.bmp);
-    // here we push to array of object, to use it in future
-    gGameEngine.game.players.push(this);
 };
 
 Player.prototype._properties = new TextureProperty()
-    .setAlign(true);
+    .setAligned(true);
 
 Player.prototype.remove = function () {
-    gGameEngine.stage.removeChild(this.bmp);
+    if(this.bmp.stage !== null)
+        this.bmp.stage.removeChild(this.bmp);
 };
 
 Player.prototype.animate = function (animation) {

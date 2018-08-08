@@ -1,6 +1,6 @@
-var Bomb = function (id, position) {
+var Bomb = function (id, position, texture) {
     this.id = id;
-    var img = gGameEngine.asset.bomb;
+    var img = texture;
     // todo this.strength = strength;
 
     // if you have got unusual bomb, put its size here
@@ -24,12 +24,12 @@ var Bomb = function (id, position) {
 
     this.bmp = new createjs.Sprite(spriteSheet);
 
-    if(this._properties.getAlign()) {
+    if(this._properties.isAligned()) {
         this.bmp.regX = (size.w - this._properties.getAlignHeight()) / 2;
         this.bmp.regY = (size.h - this._properties.getAlignHeight()) / 2;
     }
 
-    if(this._properties.getResizeTexture()) {
+    if(this._properties.isResized()) {
         this.bmp.scaleX = this._properties.getWidth() / size.w;
         this.bmp.scaleY = this._properties.getHeight()/ size.h;
     }
@@ -39,17 +39,14 @@ var Bomb = function (id, position) {
 
     // активация анимации
     this.bmp.gotoAndPlay('idle');
-    // here we push to create element at screen
-    gGameEngine.stage.addChild(this.bmp);
-    // here we push to array of object, to use it in future
-    gGameEngine.game.bombs.push(this);
 };
 
 Bomb.prototype._properties = new TextureProperty()
-    .setAlign(true);
+    .setAligned(true);
 
 Bomb.prototype.remove = function() {
-    gGameEngine.stage.removeChild(this.bmp);
+    if(this.bmp.stage !== null)
+        this.bmp.stage.removeChild(this.bmp);
 };
 
 Bomb.prototype.update = function () {

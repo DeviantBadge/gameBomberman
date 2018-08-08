@@ -36,7 +36,11 @@ MessageBroker.prototype.handlePawn = function(obj) {
         player.direction = direction;
         player.alive = obj.alive;
     } else {
-        player = new Player(obj.id, position);
+        player = new Player(obj.id, position, gGameEngine.asset.pawn);
+        // here we push to create element at screen
+        gGameEngine.stage.addChild(player.bmp);
+        // here we push to array of object, to use it in future
+        gGameEngine.game.players.push(player);
     }
 };
 
@@ -50,7 +54,11 @@ MessageBroker.prototype.handleBomb = function(obj) {
         bomb.bmp.x = position.x;
         bomb.bmp.y = position.y;
     } else {
-        new Bomb(obj.id, position);
+        bomb = new Bomb(obj.id, position, gGameEngine.asset.bomb);
+        // here we push to create element at screen
+        gGameEngine.stage.addChild(bomb.bmp);
+        // here we push to array of object, to use it in future
+        gGameEngine.game.bombs.push(bomb);
     }
 };
 
@@ -64,7 +72,24 @@ MessageBroker.prototype.handleBonus = function(obj) {
         bonus.bmp.x = position.x;
         bonus.bmp.y = position.y;
     } else {
-        new Bonus(obj.id, position, obj.bonusType);
+
+        switch (obj.bonusType) {
+            case 'SPEED':
+                bonus = new Bonus(obj.id, position, gGameEngine.asset.bonus.speed);
+                break;
+            case 'BOMBS':
+                bonus = new Bonus(obj.id, position, gGameEngine.asset.bonus.bombs);
+                break;
+            case 'RANGE':
+                bonus = new Bonus(obj.id, position, gGameEngine.asset.bonus.explosion);
+                break;
+            default:
+                console.error('Smth was wrong with bonus types!');
+                throw "Smth was wrong with bonus types!";
+        }
+
+        gGameEngine.stage.addChild(bonus.bmp);
+        gGameEngine.game.bonuses.push(bonus);
     }
 };
 
@@ -77,7 +102,19 @@ MessageBroker.prototype.handleTile = function (obj) {
     if (tile) {
         tile.material = obj.type;
     } else {
-        new Tile(obj.id, position, obj.type);
+        switch (obj.type) {
+            case 'Wall':
+                tile = new Tile(obj.id, position, gGameEngine.asset.tile.wall);
+                break;
+            case 'Wood':
+                tile = new Tile(obj.id, position, gGameEngine.asset.tile.wood);
+                break;
+            default:
+                break;
+        }
+
+        gGameEngine.stage.addChild(tile.bmp);
+        gGameEngine.game.tiles.push(tile);
     }
 };
 
@@ -88,7 +125,9 @@ MessageBroker.prototype.handleFire = function (obj) {
 
     var position = gMessageBroker.mirrorPosition(obj.position);
     if (!fire) {
-        new Fire(obj.id, position);
+        fire = new Fire(obj.id, position, gGameEngine.asset.fire);
+        gGameEngine.stage.addChild(fire.bmp);
+        gGameEngine.game.fires.push(fire);
     }
 };
 
