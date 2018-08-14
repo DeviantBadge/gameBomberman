@@ -126,6 +126,7 @@ MessageBroker.prototype.handleFire = function (obj) {
     var position = gMessageBroker.mirrorPosition(obj.position);
     if (!fire) {
         fire = new Fire(obj.id, position, textureManager.asset.fire);
+        fire.animate();
         GM.gameStage.addChild(fire.bmp);
         GM.game.fires.push(fire);
     }

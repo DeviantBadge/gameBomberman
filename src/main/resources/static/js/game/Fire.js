@@ -37,8 +37,6 @@ var Fire = function (id, position, texture) {
     this.bmp.x = position.x;
     this.bmp.y = position.y;
 
-    this.bmp.gotoAndPlay('idle');
-
     // удаление элемента после анимации
     var self = this;
     this.bmp.addEventListener('animationend', function() {
@@ -48,6 +46,13 @@ var Fire = function (id, position, texture) {
 
 Fire.prototype._properties = new TextureProperty()
     .setAligned(true);
+
+Fire.prototype.animate = function (animation) {
+    if(animation !== null && animation !== undefined)
+        this.bmp.gotoAndPlay(animation);
+    else
+        this.bmp.gotoAndPlay('idle');
+};
 
 Fire.prototype.remove = function () {
     if(this.bmp.stage !== null)

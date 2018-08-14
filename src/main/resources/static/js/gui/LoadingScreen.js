@@ -3,6 +3,9 @@ var LoadingScreen = function () {
     this.disposed = false;
     this.loadingCanvas = null;
     this.loadingStage = null;
+    this.boy = null;
+    this.boyRadius = 50;
+    this.loopDuration = 2; // 5 seconds
 };
 
 LoadingScreen.prototype.initialize = function () {
@@ -13,7 +16,7 @@ LoadingScreen.prototype.initialize = function () {
     this.initStage();
     this.drawBackground();
     this.initBoy();
-    this.activateListener(this.loadingStage);
+    this.activateListener();
     this.toggleWindow();
 };
 
@@ -25,11 +28,21 @@ LoadingScreen.prototype.initStage = function () {
     this.loadingStage.enableMouseOver();
 };
 
-LoadingScreen.prototype.activateListener = function (stage) {
+LoadingScreen.prototype.activateListener = function () {
     // todo centralise that
-    createjs.Ticker.addEventListener('tick', function () {
-        stage.update();
+    var self = this;
+    createjs.Ticker.addEventListener('tick', function (event) {
+        self.update(event);
     });
+};
+
+LoadingScreen.prototype.update = function(event) {
+    this.updateBoyRotation(event.delta);
+    this.loadingStage.update();
+};
+
+LoadingScreen.prototype.updateBoyRotation = function(delta) {
+    this.boy.bmp.rotation += (360 * delta) / (1000 * this.loopDuration);
 };
 
 LoadingScreen.prototype.toggleWindow = function () {
@@ -43,12 +56,17 @@ LoadingScreen.prototype.toggleWindow = function () {
 };
 
 LoadingScreen.prototype.initBoy = function () {
-    var pawn = new Player(0, {x: 0, y: 0}, textureManager.asset.pawn);
-    pawn.animate("right");
-    this.loadingStage.addChild(pawn.bmp);
+    if(this.boy !== null && this.boy !== undefined) {
+        this.loadingStage.removeChild(this.boy.bmp);
+        this.boy = null;
+    }
+    this.boy = new Player(0, {x: GM.getWidthInPixel() / 2, y: GM.getHeightInPixel() / 2}, textureManager.asset.pawn);
+    this.boy.animate("right");
+    this.boy.bmp.regX += GM.getTileSize() / 2;
+    this.boy.bmp.regY += GM.getTileSize() / 2 + this.boyRadius;
+
+    this.loadingStage.addChild(this.boy.bmp);
     this.loadingStage.update();
-    console.log(this.loadingStage.canvas.width);
-    console.log(this.loadingStage.canvas.height);
 };
 
 LoadingScreen.prototype.drawBackground = function () {

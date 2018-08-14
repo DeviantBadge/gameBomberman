@@ -1,6 +1,4 @@
 var FirstGui = function () {
-    // gui list init
-    // todo init gui here in another function
     this.loginWindow = null;
     this.loadingScreen = null;
 };
