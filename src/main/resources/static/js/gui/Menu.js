@@ -11,7 +11,6 @@ var Menu = function (stage) {
 
 Menu.prototype.show = function () {
     this.drawBackground();
-    this.drawPlayButton();
 };
 
 Menu.prototype.hide = function () {
@@ -44,98 +43,4 @@ Menu.prototype.showGameOverText = function (text) {
     gameOverText.y = shiftFromUpside;
     this.stage.addChild(gameOverText);
     this.elements.push(gameOverText);
-};
-
-Menu.prototype.drawPlayButton = function () {
-    var buttonSize = 110;
-    // counting central position for this element
-    var buttonX = (GM.getWidthInPixel() - buttonSize) / 2;
-    var buttonY = (GM.getHeightInPixel() - buttonSize) / 2;
-
-    this.drawPlayButtonBackground(buttonX, buttonY, buttonSize);
-    this.drawPlayButtonText(buttonX, buttonY, buttonSize);
-    this.drawPawnIcon(buttonX, buttonY, buttonSize);
-};
-
-Menu.prototype.drawPlay = function (x, y, buttonSize) {
-    var playButtonBackgroundGraphics = new createjs.Graphics()
-        .beginFill("rgba(0, 0, 0, 0.5)")
-        .drawRect(x, y, buttonSize, buttonSize);
-
-    var background = new createjs.Shape(playButtonBackgroundGraphics);
-    this.stage.addChild(background);
-    this.elements.push(background);
-    this.setHandCursor(background);
-
-    background.addEventListener('click', function() {
-        GM.startGame()
-    });
-};
-
-Menu.prototype.drawPlay = function (x, y, buttonSize) {
-    var playText = new createjs.Text("Play", "32px Helvetica", "#ff4444");
-    // counting central position inside background
-    playText.x = x + (buttonSize - playText.getMeasuredWidth()) / 2;
-    var shiftFromDownside = 20;
-    playText.y = (y + buttonSize) - (playText.getMeasuredHeight() + shiftFromDownside);
-    this.stage.addChild(playText);
-    this.elements.push(playText);
-};
-
-Menu.prototype.drawPawn = function (x, y, buttonSize) {
-    var singleIcon = new createjs.Bitmap(textureManager.asset.pawn);
-    var pawnIconSize = 48;
-    singleIcon.sourceRect = new createjs.Rectangle(0, 0, pawnIconSize, pawnIconSize);
-    // counting central position inside background
-    singleIcon.x = x + (buttonSize - pawnIconSize) / 2;
-    var shiftFromUpside = 13;
-    singleIcon.y = y + shiftFromUpside;
-    this.stage.addChild(singleIcon);
-    this.elements.push(singleIcon);
-};
-
-Menu.prototype.drawPlayButtonBackground = function (x, y, buttonSize) {
-    var playButtonBackgroundGraphics = new createjs.Graphics()
-        .beginFill("rgba(0, 0, 0, 0.5)")
-        .drawRect(x, y, buttonSize, buttonSize);
-
-    var background = new createjs.Shape(playButtonBackgroundGraphics);
-    this.stage.addChild(background);
-    this.elements.push(background);
-    this.setHandCursor(background);
-
-    background.addEventListener('click', function() {
-        GM.startGame()
-    });
-};
-
-Menu.prototype.drawPlayButtonText = function (x, y, buttonSize) {
-    var playText = new createjs.Text("Play", "32px Helvetica", "#ff4444");
-    // counting central position inside background
-    playText.x = x + (buttonSize - playText.getMeasuredWidth()) / 2;
-    var shiftFromDownside = 20;
-    playText.y = (y + buttonSize) - (playText.getMeasuredHeight() + shiftFromDownside);
-    this.stage.addChild(playText);
-    this.elements.push(playText);
-};
-
-Menu.prototype.drawPawnIcon = function (x, y, buttonSize) {
-    var singleIcon = new createjs.Bitmap(textureManager.asset.pawn);
-    var pawnIconSize = 48;
-    singleIcon.sourceRect = new createjs.Rectangle(0, 0, pawnIconSize, pawnIconSize);
-    // counting central position inside background
-    singleIcon.x = x + (buttonSize - pawnIconSize) / 2;
-    var shiftFromUpside = 13;
-    singleIcon.y = y + shiftFromUpside;
-    this.stage.addChild(singleIcon);
-    this.elements.push(singleIcon);
-};
-
-Menu.prototype.setHandCursor = function (btn) {
-    btn.addEventListener('mouseover', function () {
-        document.body.style.cursor = 'pointer';
-    });
-    btn.addEventListener('mouseout', function () {
-        document.body.style.cursor = 'auto';
-    });
 };

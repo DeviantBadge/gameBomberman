@@ -35,8 +35,10 @@
     <script src="js/game/Tile.js"></script>
 
     <script src="js/gui/FirstGui.js"></script>
+    <script src="js/gui/PlayButton.js"></script>
     <script src="js/gui/LoadingScreen.js"></script>
     <script src="js/gui/Login.js"></script>
+    <script src="js/gui/MainMenu.js"></script>
     <script src="js/gui/Menu.js"></script>
 
     <script src="js/messaging/MatchMaker.js"></script>
@@ -99,6 +101,25 @@
                 </div>
             </div>
         </div>
+
+        <div id="mainMenu-background" class="position-fullparent">
+            <div id="mainMenuWindow" class="card-deck mb-3 text-center position-center tr animated-arive-from-top" style="width: 600px; height: 350px;">
+                <canvas id="mainMenuCanvas" class="position-fullparent" style="z-index: 1;"></canvas>
+                <div class="card mb-4 box-shadow ">
+                    <div style="z-index: 1;">
+                        <div  id = "mainMenuLoginCard">
+                            <div class="card-header">
+                                <h4 class="my-0 font-weight-normal">Game Menu</h4>
+                            </div>
+                            <div class="card-body">
+                                <button type="button" id="casualSettings" onclick="GUI.mainMenu.openCasualSettings()" class="btn btn-lg btn-outline-primary settings-button">Settings</button>
+                                <button type="button" id="rankedSettings" onclick="GUI.mainMenu.openRankedSettings()" class="btn btn-lg btn-outline-primary settings-button">Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <canvas id="loadingScreen" class="position-fullparent" style="z-index: 333;"></canvas>
     </div>
     <h3>You have only 5 seconds to transmit the bomb, be fast!</h3>
@@ -116,6 +137,7 @@
     </div>
 </div>
 <button onclick="GUI.loginWindow.toggleWindow()">Hhahahahh</button>
+<button onclick="GUI.mainMenu.toggleWindow()">hASDdasd</button>
 
 </body>
 

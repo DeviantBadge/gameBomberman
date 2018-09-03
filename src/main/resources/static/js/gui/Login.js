@@ -5,16 +5,16 @@
 // ***********************************************
 
 var LoginWindow = function () {
-    this.loginBackground = null;
-    this.loginWindow = null;
+    this.background = null;
+    this.window = null;
     this.loginCard = null;
     this.registerCard = null;
     this.disposed = false;
     this.initialized = false;
 
 
-    this.loginCanvas = null;
-    this.loginStage = null;
+    this.canvas = null;
+    this.stage = null;
 
     this.signInRequest = null;
     this.registerRequest = null;
@@ -29,15 +29,15 @@ LoginWindow.prototype.initialize = function (clusterSettings) {
         return;
     this.initialized = true;
 
-    this.loginBackground = $("#login-background");
-    this.loginWindow = $("#loginWindow");
+    this.background = $("#login-background");
+    this.window = $("#loginWindow");
     this.loginCard = $("#loginCard");
     this.registerCard = $("#registerCard");
 
 
 
-    this.loginCanvas = null;
-    this.loginStage = null;
+    this.canvas = null;
+    this.stage = null;
     this.initStage();
 
     this.signInRequest = {
@@ -60,10 +60,10 @@ LoginWindow.prototype.initialize = function (clusterSettings) {
 };
 
 LoginWindow.prototype.initStage = function () {
-    this.loginCanvas = $("#loginCanvas");
-    this.loginStage = new createjs.Stage("loginCanvas");
+    this.canvas = $("#loginCanvas");
+    this.stage = new createjs.Stage("loginCanvas");
     this.updateStageSize();
-    this.loginStage.enableMouseOver();
+    this.stage.enableMouseOver();
 
     var self = this;
     createjs.Ticker.addEventListener('tick', function (event) {
@@ -72,12 +72,12 @@ LoginWindow.prototype.initStage = function () {
 };
 
 LoginWindow.prototype.updateStageSize = function() {
-    this.loginStage.canvas.width = this.loginCanvas.width();
-    this.loginStage.canvas.height = this.loginCanvas.height();
+    this.stage.canvas.width = this.canvas.width();
+    this.stage.canvas.height = this.canvas.height();
 };
 
 LoginWindow.prototype.update = function(event) {
-    this.loginStage.update();
+    this.stage.update();
 };
 
 LoginWindow.prototype.openRegister = function () {
@@ -97,44 +97,44 @@ LoginWindow.prototype.openSignIn = function () {
 
 LoginWindow.prototype.toggleWindow = function () {
     if(this.disposed) {
-        this.loginBackground.appendTo('#game');
-        this.loginBackground.toggleClass("transparent");
-        this.loginWindow.toggleClass('disposed-top');
+        this.background.appendTo('#game');
+        this.background.toggleClass("transparent");
+        this.window.toggleClass('disposed-top');
         this.disposed = false;
     } else {
         this.disposed = true;
-        this.loginBackground.toggleClass("transparent");
-        this.loginWindow.toggleClass('disposed-top');
+        this.background.toggleClass("transparent");
+        this.window.toggleClass('disposed-top');
     }
 };
 
 LoginWindow.prototype.toggleBomb = function () {
     if(this.bomb === undefined || this.bomb === null) {
-        this.bomb = new Bomb(0, {x: this.loginWindow.width() / 2, y: 64}, textureManager.asset.bomb);
+        this.bomb = new Bomb(0, {x: this.window.width() / 2, y: 64}, textureManager.asset.bomb);
         this.bomb.bmp.regX += GM.getTileSize() / 2;
         this.bomb.bmp.regY += GM.getTileSize() / 2;
     }
     if (this.fire === null || this.fire === undefined) {
-        this.fire = new Fire(0, {x: this.loginWindow.width() / 2, y: 64}, textureManager.asset.fire);
+        this.fire = new Fire(0, {x: this.window.width() / 2, y: 64}, textureManager.asset.fire);
         this.fire.bmp.regX += GM.getTileSize() / 2;
         this.fire.bmp.regY += GM.getTileSize() / 2;
     }
     if(this.blown) {
-        this.loginStage.addChild(this.bomb.bmp);
-        this.loginStage.update();
+        this.stage.addChild(this.bomb.bmp);
+        this.stage.update();
         this.blown = false;
     } else {
-        this.loginStage.removeChild(this.bomb.bmp);
+        this.stage.removeChild(this.bomb.bmp);
         this.fire.animate();
-        this.loginStage.addChild(this.fire.bmp);
-        this.loginStage.update();
+        this.stage.addChild(this.fire.bmp);
+        this.stage.update();
         this.blown = true;
     }
 };
 
 LoginWindow.prototype.signIn = function () {
     this.toggleBomb();
-    GUI.loadingScreen.toggleWindow();
+    GUI.toggleLoading();
 
     // fire request
     console.log("signing in");
@@ -152,17 +152,17 @@ LoginWindow.prototype.signIn = function () {
         GM.playerName = playerName;
         GM.playerPassword = playerPassword;
         self.toggleBomb();
-        GUI.loadingScreen.toggleWindow();
+        GUI.toggleLoading();
     }).fail(function (jqXHR, textStatus) {
         alert("Failed to Sign In");
         self.toggleBomb();
-        GUI.loadingScreen.toggleWindow();
+        GUI.toggleLoading();
     });
 };
 
 LoginWindow.prototype.register = function () {
     this.toggleBomb();
-    GUI.loadingScreen.toggleWindow();
+    GUI.toggleLoading();
 
     // fire request
     console.log("registering");
@@ -182,10 +182,10 @@ LoginWindow.prototype.register = function () {
         GM.playerName = playerName;
         GM.playerPassword = playerPassword;
         self.toggleBomb();
-        GUI.loadingScreen.toggleWindow();
+        GUI.toggleLoading();
     }).fail(function (jqXHR, textStatus) {
         alert("Failed to Register");
         self.toggleBomb();
-        GUI.loadingScreen.toggleWindow();
+        GUI.toggleLoading();
     });
 };
