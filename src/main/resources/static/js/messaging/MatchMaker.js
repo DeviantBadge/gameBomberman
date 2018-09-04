@@ -1,22 +1,31 @@
 var MatchMaker = function (clusterSetting) {
-    this.settings = {
-        url: clusterSetting.matchMakerUrl(),
+    this.clusterSettings = clusterSetting;
+};
+
+MatchMaker.prototype.getSettings = function (parameters) {
+    return {
+        url: this.clusterSettings.matchMakerUrl() + parameters.gameType,
         method: "POST",
         crossDomain: true,
         async: false
     };
 };
 
-MatchMaker.prototype.getSessionId = function () {
-    GM.playerName = Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-    var name = "name=" + GM.playerName;
-    this.settings.data = name;
-    console.log(this.settings);
+MatchMaker.prototype.getSessionId = function (parameters) {
+    switch (parameters.gameType) {
+        case "casual":
+        case "ranked":
+            break;
+        default:
+            console.error("Unknown game type - " + parameters.gameType);
+            return;
+    }
+    GM.playerName = Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    var settings = this.getSettings(parameters);
+    settings.data = "name=" + GM.playerName;
 
     var sessionId = -1;
-    $.ajax(this.settings).done(function(id) {
+    $.ajax(settings).done(function(id) {
         sessionId = id;
         console.log("This lobby id - " + id);
     }).fail(function (jqXHR, textStatus) {

@@ -24,7 +24,7 @@ public class MatchMakerController {
     private PlayerDataRepository playerDataRepository;
 
     @RequestMapping(
-            path = "join",
+            path = "casual",
             method = RequestMethod.POST,
             produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> join(@RequestParam("name") String name) {

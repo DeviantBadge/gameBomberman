@@ -43,7 +43,8 @@ public class Register {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> register(@RequestBody String userData) {
         System.out.println(JsonHelper.fromJson(userData, Map.class) + " rg");
-        return new ResponseEntity<>("0", HttpStatus.OK);
+        ResponseEntity<String> response = new ResponseEntity<>(userData, HttpStatus.OK);
+        return response;
     }
 
     private ResponseEntity<String> auth(String name) {

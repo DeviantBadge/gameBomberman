@@ -10,7 +10,7 @@ var ClusterSetting = function () {
         protocol: 'http',
         host: 'localhost',
         port: '8080',
-        path: '/matchmaker/join'
+        path: '/matchmaker/'
     };
 
     this.signIn = {

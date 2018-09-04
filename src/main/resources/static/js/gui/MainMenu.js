@@ -27,6 +27,8 @@ var MainMenu = function () {
 
     this.casualButton = null;
     this.rankedButton = null;
+    this.casualParameters = null;
+    this.rankedParameters = null;
 };
 
 MainMenu.prototype.initialize = function (clusterSettings) {
@@ -60,6 +62,8 @@ MainMenu.prototype.initialize = function (clusterSettings) {
         async: true
     };
 
+    this.casualParameters = new CasualParameters();
+    this.rankedParameters = new RankedParameters();
     this.initButtons();
 };
 
@@ -100,21 +104,28 @@ MainMenu.prototype.initRankedSettingsButton = function () {
 };
 
 MainMenu.prototype.initCasualPlayButton = function () {
+    const self = this;
     this.casualButton = new PlayButton(
         this.stage.canvas.width / 4 - this.buttonSize / 2,
         this.playButtonOffsetTop,
         this.buttonSize, this.buttonSize,
-        "Casual", 0, this.playCasual
-    );this.casualButton.activate(this.stage);
+        "Casual", 0, function() {
+            self.playCasual();
+        }
+    );
+    this.casualButton.activate(this.stage);
     // this.stage.canvas.width / 4 - this.buttonSize / 2, this.playButtonOffsetTop, this.buttonSize, this.buttonSize, "rgba(0, 0, 0, 0.5)"
 };
 
 MainMenu.prototype.initRankedPlayButton = function () {
+    const self = this;
     this.rankedButton = new PlayButton(
         this.stage.canvas.width * 3 / 4 - this.buttonSize / 2,
         this.playButtonOffsetTop,
         this.buttonSize, this.buttonSize,
-        "Ranked", 1, this.playRanked
+        "Ranked", 1, function() {
+            self.playRanked();
+        }
     );
     this.rankedButton.activate(this.stage);
     // this.stage.canvas.width * 3 / 4 - this.buttonSize / 2, this.playButtonOffsetTop, this.buttonSize, this.buttonSize, "rgba(0, 0, 0, 0.5)"
@@ -206,11 +217,12 @@ MainMenu.prototype.register = function () {
 
 MainMenu.prototype.playCasual = function () {
     console.log("Wanna play casual match? hahahahahahaaaaaaaa");
-    GM.startGame();
+    GM.startGame(this.casualParameters);
 };
 
 MainMenu.prototype.playRanked = function () {
     console.log("Wanna play ranked match? hahahahahahaaaaaaaa");
+    GM.startGame(this.rankedParameters);
 };
 
 MainMenu.prototype.openCasualSettings = function () {

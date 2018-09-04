@@ -151,8 +151,13 @@ LoginWindow.prototype.signIn = function () {
         console.log("signed In");
         GM.playerName = playerName;
         GM.playerPassword = playerPassword;
+        GM.credentials.playerName = playerName;
+        GM.credentials.playerPassword = playerPassword;
+
         self.toggleBomb();
+        self.toggleWindow();
         GUI.toggleLoading();
+        GUI.mainMenu.toggleWindow();
     }).fail(function (jqXHR, textStatus) {
         alert("Failed to Sign In");
         self.toggleBomb();
@@ -181,8 +186,13 @@ LoginWindow.prototype.register = function () {
         console.log("This lobby id - " + id);
         GM.playerName = playerName;
         GM.playerPassword = playerPassword;
+        GM.credentials.playerName = playerName;
+        GM.credentials.playerPassword = playerPassword;
+
         self.toggleBomb();
+        self.toggleWindow();
         GUI.toggleLoading();
+        GUI.mainMenu.toggleWindow();
     }).fail(function (jqXHR, textStatus) {
         alert("Failed to Register");
         self.toggleBomb();

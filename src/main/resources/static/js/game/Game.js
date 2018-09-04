@@ -1,5 +1,6 @@
-var Game = function (stage) {
+var Game = function (stage, parameters) {
     this.stage = stage;
+    this.parameters = parameters;
 
     this.players = [];
     this.tiles = [];
@@ -12,7 +13,7 @@ var Game = function (stage) {
 
 Game.prototype.start = function () {
     gInputEngine.setupBindings();
-    var gameId = gMatchMaker.getSessionId();
+    var gameId = gMatchMaker.getSessionId(this.parameters);
     GM.gameId = gameId;
     this.serverProxy.connectToGameServer(gameId);
     this.drawBackground();

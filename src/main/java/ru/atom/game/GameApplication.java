@@ -1,8 +1,8 @@
 package ru.atom.game;
 
-import jdk.jfr.Name;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -42,7 +42,7 @@ public class GameApplication {
     }
 
     @Bean
-    @Name("GameSession")
+    @Qualifier("GameSession")
     @Scope(value = "prototype")
     @Lazy(value = true)
     public GameSession getGameSession(GameSessionProperties properties) {
@@ -50,7 +50,7 @@ public class GameApplication {
     }
 
     @Bean
-    @Name("GameSessionProperties")
+    @Qualifier("GameSessionProperties")
     @Scope(value = "prototype")
     @Lazy(value = true)
     public GameSessionProperties getGameSessionProperties(GameSessionPropertiesCreator creator) {
@@ -58,7 +58,7 @@ public class GameApplication {
     }
 
     @Bean
-    @Name("GameSessionPropertiesCreator")
+    @Qualifier("GameSessionPropertiesCreator")
     @Scope(value = "prototype")
     @Lazy(value = true)
     public GameSessionPropertiesCreator getGameSessionPropertiesCreator() {

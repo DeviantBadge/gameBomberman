@@ -12,6 +12,10 @@ var GameMaster = function () {
     this.gameStage = null;
     this.gameField = null;
 
+    this.credentials = {
+        name : "",
+        password : ""
+    };
     this.playerName = "";
     this.playerPassword = "";
     this.gameId = "";
@@ -94,9 +98,9 @@ GameMaster.prototype.initCanvas = function () {
 // here we manage our game state
 // ************************************************
 
-GameMaster.prototype.startGame = function () {
+GameMaster.prototype.startGame = function (parameters) {
     this.menu.hide();
-    this.game = new Game(this.gameStage);
+    this.game = new Game(this.gameStage, parameters);
     this.game.start();
 };
 
