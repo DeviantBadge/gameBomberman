@@ -1,3 +1,4 @@
+// todo - make something like admin viewer? where you can see game states
 var GameMaster = function () {
     this.asset = {
         pawn: null,
@@ -16,8 +17,6 @@ var GameMaster = function () {
         name : "",
         password : ""
     };
-    this.playerName = "";
-    this.playerPassword = "";
     this.gameId = "";
 };
 
@@ -98,10 +97,11 @@ GameMaster.prototype.initCanvas = function () {
 // here we manage our game state
 // ************************************************
 
-GameMaster.prototype.startGame = function (parameters) {
+GameMaster.prototype.startGame = function (gameID) {
     this.menu.hide();
-    this.game = new Game(this.gameStage, parameters);
-    this.game.start();
+    this.gameId = gameID;
+    this.game = new Game(this.gameStage);
+    this.game.start(gameID);
 };
 
 GameMaster.prototype.finishGame = function (gameOverText) {

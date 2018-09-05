@@ -5,5 +5,14 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface PlayerDataRepository extends CrudRepository<PlayerData, Long> {
-    List<PlayerData> findByName(String name);
+    PlayerData findByName(String name);
+
+    default boolean saveNewPlayer(PlayerData player) {
+        try {
+            save(player);
+        } catch (Exception e){
+            return false;
+        }
+        return true;
+    }
 }

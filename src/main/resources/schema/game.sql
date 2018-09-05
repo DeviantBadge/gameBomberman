@@ -7,10 +7,9 @@ drop table if exists game.playerData;
 create table game.player (
   id                serial             not null,
   name              varchar(20) unique not null,
-  password          varchar(20)        not null,
-  games_played      integer            not null,
-  games_won         integer            not null,
+  password          varchar(16)        not null,
   rating            integer            not null,
+  logged            boolean            not null,
 
   primary key (id)
 );

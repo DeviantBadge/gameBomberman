@@ -8,6 +8,7 @@ var TextureManager = function () {
     };
 };
 
+// TODO several skins
 TextureManager.prototype.load = function (afterload) {
     var queue = new createjs.LoadQueue();
     var self = this;

@@ -1,6 +1,7 @@
 var CasualParameters = function () {
     this.playerAmount = 2;
     this.gameType = "casual";
+    this.credentials = {};
 };
 
 CasualParameters.prototype.reset = function (amount) {

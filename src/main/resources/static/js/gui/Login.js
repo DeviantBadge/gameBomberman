@@ -147,19 +147,29 @@ LoginWindow.prototype.signIn = function () {
 
     this.signInRequest.data = JSON.stringify(userData);
     var self = this;
-    $.ajax(this.signInRequest).done(function(id) {
-        console.log("signed In");
-        GM.playerName = playerName;
-        GM.playerPassword = playerPassword;
-        GM.credentials.playerName = playerName;
-        GM.credentials.playerPassword = playerPassword;
+    $.ajax(this.signInRequest).done(function(response) {
+        console.log(response);
+        GM.credentials.name = playerName;
+        GM.credentials.password = playerPassword;
 
         self.toggleBomb();
         self.toggleWindow();
         GUI.toggleLoading();
         GUI.mainMenu.toggleWindow();
     }).fail(function (jqXHR, textStatus) {
-        alert("Failed to Sign In");
+        var response = jqXHR.responseJSON;
+        if(response === undefined) {
+            response = jqXHR.responseText;
+            if(response === undefined) {
+                alert("Failed to Sign In");
+            } else {
+                alert(response)
+            }
+        } else {
+            alert("Failed to SignIn .\n" +
+                "Error message: " + response.errorMessage + "\n" +
+                "Probable solution: " + response.solution);
+        }
         self.toggleBomb();
         GUI.toggleLoading();
     });
@@ -182,20 +192,34 @@ LoginWindow.prototype.register = function () {
 
     this.registerRequest.data = JSON.stringify(userData);
     var self = this;
-    $.ajax(this.registerRequest).done(function(id) {
-        console.log("This lobby id - " + id);
-        GM.playerName = playerName;
-        GM.playerPassword = playerPassword;
-        GM.credentials.playerName = playerName;
-        GM.credentials.playerPassword = playerPassword;
+    $.ajax(this.registerRequest).done(function(response) {
+        console.log(response);
+        GM.credentials.name = playerName;
+        GM.credentials.password = playerPassword;
 
         self.toggleBomb();
         self.toggleWindow();
         GUI.toggleLoading();
         GUI.mainMenu.toggleWindow();
     }).fail(function (jqXHR, textStatus) {
-        alert("Failed to Register");
+        var response = jqXHR.responseJSON;
+        if(response === undefined) {
+            response = jqXHR.responseText;
+            if(response === undefined) {
+                alert("Failed to Register.");
+            } else {
+                alert(response)
+            }
+        } else {
+            alert("Failed to Register.\n" +
+                "Error message: " + response.errorMessage + "\n" +
+                "Probable solution: " + response.solution);
+        }
         self.toggleBomb();
         GUI.toggleLoading();
     });
+};
+
+LoginWindow.prototype.handleResponse = function (response) {
+
 };

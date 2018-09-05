@@ -7,10 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.atom.game.databases.player.PlayerDataRepository;
+import ru.atom.game.socket.util.JsonHelper;
+
+import java.util.Map;
 
 @Controller
 @RequestMapping("matchmaker")
@@ -26,9 +30,12 @@ public class MatchMakerController {
     @RequestMapping(
             path = "casual",
             method = RequestMethod.POST,
-            produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> join(@RequestParam("name") String name) {
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> join(@RequestBody String userData) {
         ResponseEntity<String> response;
+        Map<String, Object> data = JsonHelper.fromJson(userData, Map.class);
+        String name = ((Map) data.get("credentials")).get("name").toString();
+
         if((response = auth(name)) != null) {
             return response;
         }
@@ -39,9 +46,12 @@ public class MatchMakerController {
     @RequestMapping(
             path = "rating",
             method = RequestMethod.POST,
-            produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> rating(@RequestParam("name") String name) {
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> rating(@RequestBody String userData) {
         ResponseEntity<String> response;
+        Map<String, Object> data = JsonHelper.fromJson(userData, Map.class);
+        String name = ((Map) data.get("credentials")).get("name").toString();
+
         if((response = auth(name)) != null) {
             return response;
         }

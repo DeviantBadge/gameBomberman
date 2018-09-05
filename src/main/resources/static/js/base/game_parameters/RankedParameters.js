@@ -1,6 +1,7 @@
 var RankedParameters = function () {
     this.playerAmount = 2;
     this.gameType = "ranked";
+    this.credentials = {};
 };
 
 RankedParameters.prototype.reset = function (amount) {

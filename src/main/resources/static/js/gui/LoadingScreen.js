@@ -1,3 +1,4 @@
+// TODO make time past from loading beginning
 var LoadingScreen = function () {
     this.initialized = false;
     this.disposed = false;
@@ -17,7 +18,6 @@ LoadingScreen.prototype.initialize = function () {
     this.drawBackground();
     this.initBoy();
     this.activateListener();
-    this.toggleWindow();
 };
 
 LoadingScreen.prototype.initStage = function () {

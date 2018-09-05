@@ -32,7 +32,7 @@ ServerProxy.prototype.setupMessaging = function() {
 
 ServerProxy.prototype.connectToGameServer = function(gameId) {
     this.socket = new SockJS(gClusterSettings.gameServerUrl()
-        + "?name=" + GM.playerName
+        + "?name=" + GM.credentials.name
         + "&gameId=" + GM.gameId
     );
     var self = this;

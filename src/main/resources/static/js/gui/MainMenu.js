@@ -4,6 +4,7 @@
 // page is loading
 // ***********************************************
 
+// TODO settings
 var MainMenu = function () {
     this.background = null;
     this.window = null;
@@ -45,22 +46,6 @@ MainMenu.prototype.initialize = function (clusterSettings) {
     this.canvas = null;
     this.stage = null;
     this.initStage();
-
-    this.signInRequest = {
-        url: clusterSettings.signInUrl(),
-        method: "POST",
-        contentType: 'application/json',
-        crossDomain: true,
-        async: true
-    };
-
-    this.registerRequest = {
-        url: clusterSettings.registerUrl(),
-        method: "POST",
-        contentType: 'application/json',
-        crossDomain: true,
-        async: true
-    };
 
     this.casualParameters = new CasualParameters();
     this.rankedParameters = new RankedParameters();
@@ -157,72 +142,22 @@ MainMenu.prototype.toggleWindow = function () {
 // Buttons on click functions
 //**********************************************************
 
-MainMenu.prototype.signIn = function () {
-    this.toggleBomb();
-    GUI.toggleLoading();
-
-    // fire request
-    console.log("signing in");
-    var playerName = $("#inputUsername").val();
-    var playerPassword = $("#inputPassword").val();
-    var userData = {
-        name: playerName,
-        password: playerPassword
-    };
-
-    this.signInRequest.data = JSON.stringify(userData);
-    var self = this;
-    $.ajax(this.signInRequest).done(function(id) {
-        console.log("signed In");
-        GM.playerName = playerName;
-        GM.playerPassword = playerPassword;
-        self.toggleBomb();
-        GUI.toggleLoading();
-    }).fail(function (jqXHR, textStatus) {
-        alert("Failed to Sign In");
-        self.toggleBomb();
-        GUI.toggleLoading();
-    });
-};
-
-MainMenu.prototype.register = function () {
-    this.toggleBomb();
-    GUI.toggleLoading();
-
-    // fire request
-    console.log("registering");
-    var playerName = $("#newUsername").val();
-    var playerPassword = $("#newUserPassword").val();
-    var passwordCopy = $("#newUserPasswordCopy").val();
-    var userData = {
-        name: playerName,
-        password: playerPassword,
-        passwordCopy: passwordCopy
-    };
-
-    this.registerRequest.data = JSON.stringify(userData);
-    var self = this;
-    $.ajax(this.registerRequest).done(function(id) {
-        console.log("This lobby id - " + id);
-        GM.playerName = playerName;
-        GM.playerPassword = playerPassword;
-        self.toggleBomb();
-        GUI.toggleLoading();
-    }).fail(function (jqXHR, textStatus) {
-        alert("Failed to Register");
-        self.toggleBomb();
-        GUI.toggleLoading();
-    });
-};
-
 MainMenu.prototype.playCasual = function () {
     console.log("Wanna play casual match? hahahahahahaaaaaaaa");
-    GM.startGame(this.casualParameters);
+    const gameID = gMatchMaker.getSessionId(this.casualParameters);
+    if (gameID !== null) {
+        this.toggleWindow();
+        GM.startGame(gameID);
+    }
 };
 
 MainMenu.prototype.playRanked = function () {
     console.log("Wanna play ranked match? hahahahahahaaaaaaaa");
-    GM.startGame(this.rankedParameters);
+    const gameID = gMatchMaker.getSessionId(this.rankedParameters);
+    if (gameID !== null) {
+        this.toggleWindow();
+        GM.startGame(gameID);
+    }
 };
 
 MainMenu.prototype.openCasualSettings = function () {

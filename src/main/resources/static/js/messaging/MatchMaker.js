@@ -6,6 +6,7 @@ MatchMaker.prototype.getSettings = function (parameters) {
     return {
         url: this.clusterSettings.matchMakerUrl() + parameters.gameType,
         method: "POST",
+        contentType: 'application/json',
         crossDomain: true,
         async: false
     };
@@ -20,11 +21,12 @@ MatchMaker.prototype.getSessionId = function (parameters) {
             console.error("Unknown game type - " + parameters.gameType);
             return;
     }
-    GM.playerName = Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    GM.credentials.name = Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    parameters.credentials = GM.credentials;
     var settings = this.getSettings(parameters);
-    settings.data = "name=" + GM.playerName;
+    settings.data = JSON.stringify(parameters);
 
-    var sessionId = -1;
+    var sessionId = null;
     $.ajax(settings).done(function(id) {
         sessionId = id;
         console.log("This lobby id - " + id);
