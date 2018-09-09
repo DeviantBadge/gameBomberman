@@ -4,6 +4,7 @@ package ru.atom.game.gamesession.lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.WebSocketSession;
+import ru.atom.game.databases.player.PlayerData;
 import ru.atom.game.gamesession.session.GameSession;
 import ru.atom.game.gamesession.session.OnlineSession;
 
@@ -13,19 +14,19 @@ import java.util.List;
 public class OnlinePlayer {
     private static final Logger log = LoggerFactory.getLogger(OnlinePlayer.class);
     private WebSocketSession socket;
-    private final String name;
+    private final PlayerData playerData;
     private GameSession game;
     // private final List<OnlineSession> linkedSessions;
 
-    public OnlinePlayer(String name, WebSocketSession socket) {
+    public OnlinePlayer(PlayerData playerData, WebSocketSession socket) {
         this.socket = socket;
-        this.name = name;
+        this.playerData = playerData;
         game = null;
         // linkedSessions = new ArrayList<>();
     }
 
-    public OnlinePlayer(String name) {
-        this(name, null);
+    public OnlinePlayer(PlayerData playerData) {
+        this(playerData, null);
     }
 
     public void setSocket(WebSocketSession socket) {
@@ -43,8 +44,12 @@ public class OnlinePlayer {
         return socket;
     }
 
+    public PlayerData getPlayerData() {
+        return playerData;
+    }
+
     public String getName() {
-        return name;
+        return playerData.getName();
     }
 
     public GameSession getGame() {

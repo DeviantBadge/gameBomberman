@@ -8,6 +8,8 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import ru.atom.game.databases.player.PlayerData;
+import ru.atom.game.databases.player.PlayerDataRepository;
 import ru.atom.game.gamesession.lists.OnlinePlayer;
 import ru.atom.game.repos.ConnectionPool;
 import ru.atom.game.socket.message.request.IncomingMessage;
@@ -27,44 +29,56 @@ public class SockEventHandler extends TextWebSocketHandler {
     private GameSessionRepo sessions;
 
     @Autowired
+    private PlayerDataRepository playerRepo;
+
+    @Autowired
     private ConnectionPool connections;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
+        String response;
         Map<String, String> uriParams = UriHelper.getParamsFromUri(session.getUri().getQuery());
-        if (!checkConnectionUriParams(uriParams)) {
-            session.close();
-            log.error("Wrong parameters are: " + uriParams);
+
+        response = SocketChecker.connectionUriPreCheck(uriParams);
+        if (response != null) {
+            // todo send response to user and handle it
             log.error("Error while connecting player, for more information watch logs");
+            log.error(response);
+            session.close();
             return;
         }
-        connectPlayer(uriParams.get("gameId"), uriParams.get("name"), session);
-        // TODO login here
+
+        OnlinePlayer player = loginPlayer(session, uriParams);
+        if (player == null) {
+            log.error("Could not log in player");
+            session.close();
+        }
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+        System.out.println("ijjbjhkkgbadfjvbsdf");
         IncomingMessage mes = JsonHelper.fromJson(message.getPayload(), IncomingMessage.class);
         OnlinePlayer player = connections.getPlayer(session);
         GameSession gameSession = sessions.getSession(mes.getGameId());
-        if (!confirmPrivacy(player, mes)) {
+
+        if (!confirmPrivacy(player, mes, gameSession))
             return;
-        }
         gameSession.addOrder(player, mes);
     }
 
-    private boolean confirmPrivacy(OnlinePlayer player, IncomingMessage mes) {
-        GameSession session = sessions.getSession(mes.getGameId());
-        if (session == null) {
+    private boolean confirmPrivacy(OnlinePlayer player, IncomingMessage mes, GameSession gameSession) {
+        if (gameSession == null) {
             log.warn("Trying to send message to session with unknown id");
             return false;
         }
 
-        if (player.getGame() != session) {
+        if (player.getGame() != gameSession || !gameSession.contains(player)) {
             log.warn("Trying to send message to session where player doesnt logged in");
             return false;
         }
+
         return true;
     }
 
@@ -73,31 +87,41 @@ public class SockEventHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
         System.out.println("Socket Closed: [" + closeStatus.getCode() + "] " + closeStatus.getReason() + "; socket id [" + session.getId() + "]");
         OnlinePlayer player = connections.getPlayer(session);
-        if(player != null)
-            connections.unlink(player, player.getGame());
+        if (player != null) {
+            player.getPlayerData().setPlaying(false);
+            playerRepo.savePlayer(player.getPlayerData());
+            connections.disconnectFromGame(player, player.getGame());
+        }
         super.afterConnectionClosed(session, closeStatus);
     }
 
-    private boolean checkConnectionUriParams(Map<String, String> uriParams) {
-        boolean right = true;
-        if (uriParams.get("name") == null) {
-            log.warn("Sent connection request without \"name\" parameter");
-            right = false;
-        }
-        if (uriParams.get("gameId") == null) {
-            log.warn("Sent connection request without \"gameId\" parameter");
-            right = false;
-        }
-        return right;
-    }
 
-    private void connectPlayer(String gameId, String name, WebSocketSession session) {
-        OnlinePlayer player = connections.connected(name, session);
+    private OnlinePlayer loginPlayer(WebSocketSession session, Map<String, String> uriParams) {
+        String name = uriParams.get("name");
+        String password = uriParams.get("password");
+        String gameId = uriParams.get("gameId");
+        PlayerData playerData;
+
+        playerData = playerRepo.findByName(name);
+        if (playerData == null
+                || !password.equals(playerData.getPassword())
+                || playerData.getPlaying())
+            return null;
+
+        OnlinePlayer player = connections.playerConnected(name, session);
         if (player == null) {
             log.error("Unknown player name");
-            return;
+            return null;
         }
+
         GameSession gameSession = sessions.getSession(gameId);
-        connections.link(player, gameSession);
+        if (connections.connectToGame(player, gameSession)) {
+            playerData.setPlaying(true);
+            if (playerRepo.savePlayer(playerData))
+                return player;
+            else
+                return null;
+        }
+        return null;
     }
 }

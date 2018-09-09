@@ -1,10 +1,13 @@
 package ru.atom.game.gamesession.session;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.atom.game.databases.player.PlayerData;
 import ru.atom.game.enums.IncomingTopic;
 import ru.atom.game.gamesession.lists.OnlinePlayer;
 import ru.atom.game.gamesession.lists.order.OrderList;
 import ru.atom.game.gamesession.lists.PlayersList;
+import ru.atom.game.repos.ConnectionPool;
 import ru.atom.game.socket.message.request.IncomingMessage;
 import ru.atom.game.objects.base.util.IdGen;
 import ru.atom.game.gamesession.lists.order.Order;
@@ -15,6 +18,9 @@ public abstract class OnlineSession extends Ticker {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(OnlineSession.class);
     private static final IdGen idGen = new IdGen();
     private final Integer id;
+
+    @Autowired
+    protected ConnectionPool connections;
 
     // just now if we want new features we have to add it manually
     private PlayersList playersList;
@@ -120,12 +126,18 @@ public abstract class OnlineSession extends Ticker {
     }
 
     public void addPlayer(OnlinePlayer player) {
+        if (isFull())
+            return;
         playersList.addPlayer(player);
         orderList.newPlayer();
     }
 
     public boolean isFull() {
         return playersAmount() == max;
+    }
+
+    public boolean contains(OnlinePlayer player) {
+        return playersList.contains(player);
     }
 
     public abstract void onPlayerDisconnect(OnlinePlayer player);

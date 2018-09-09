@@ -4,11 +4,11 @@ var ServerProxy = function () {
         'POSSESS': gMessageBroker.handlePossess,
         'GAME_OVER': gMessageBroker.handleGameOver
     };
+    this._prepared = false;
 };
 
 
-
-ServerProxy.prototype.setupMessaging = function() {
+ServerProxy.prototype.setupMessaging = function () {
     var self = this;
     gInputEngine.subscribe('up', function () {
         self.socket.send(gMessageBroker.move('up'))
@@ -30,13 +30,13 @@ ServerProxy.prototype.setupMessaging = function() {
     });
 };
 
-ServerProxy.prototype.connectToGameServer = function(gameId) {
+ServerProxy.prototype.connectToGameServer = function (gameId) {
     this.socket = new SockJS(gClusterSettings.gameServerUrl()
         + "?name=" + GM.credentials.name
+        + "&password=" + GM.credentials.password
         + "&gameId=" + GM.gameId
     );
     var self = this;
-    var prepared = false;
 
     this.socket.onmessage = function (event) {
         var msg = JSON.parse(event.data);
@@ -47,27 +47,33 @@ ServerProxy.prototype.connectToGameServer = function(gameId) {
     };
 
     this.socket.onopen = function () {
-        console.log("Connected");
-        while (!prepared){
+        console.log("connected");
+        while (!self.isReady()) {
         }
+        console.log("prepared");
 
         var template = {
             topic: "READY",
             gameId: GM.gameId,
-            data: {
-            }
+            data: {}
         };
         self.socket.send(JSON.stringify(template));
     };
 
     this.socket.onclose = function (event) {
+        self._prepared = false;
         console.log('Code: ' + event.code + ' cause: ' + event.reason);
     };
 
     this.socket.onerror = function (error) {
+        self._prepared = false;
         console.log("Error " + error.message);
     };
 
     this.setupMessaging();
-    prepared = true;
+    self._prepared = true;
+};
+
+ServerProxy.prototype.isReady = function () {
+    return this._prepared;
 };

@@ -19,8 +19,8 @@ public class PlayerData {
     @Column(name = "rating")
     private Integer rating;
 
-    @Column(name = "logged")
-    private Boolean logged;
+    @Column(name = "playing")
+    private Boolean playing;
 
     protected PlayerData() {}
 
@@ -28,14 +28,14 @@ public class PlayerData {
         this.name = name;
         this.password = password;
         this.rating = 1000;
-        this.logged = true;
+        this.playing = true;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "Player[id=%d, name='%s', rating='%s', logged='%s']",
-                id, name, rating.toString(), logged.toString());
+                "Player[id=%d, name='%s', rating='%s', playing='%s']",
+                id, name, rating.toString(), playing.toString());
     }
 
     public Long getId() {
@@ -58,11 +58,15 @@ public class PlayerData {
         return rating += ratingPoints;
     }
 
-    public boolean isLogged() {
-        return logged;
+    public boolean getPlaying() {
+        return playing;
     }
 
-    public void setLogged(Boolean logged) {
-        this.logged = logged;
+    public void setPlaying(Boolean playing) {
+        this.playing = playing;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 }

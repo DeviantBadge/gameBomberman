@@ -1,5 +1,6 @@
 package ru.atom.game.http.matchmaker.mmunit;
 
+import ru.atom.game.gamesession.lists.OnlinePlayer;
 import ru.atom.game.gamesession.session.GameSession;
 
 public class RatingSessionWrapper {
@@ -32,5 +33,17 @@ public class RatingSessionWrapper {
     public boolean inRadius(double rating) {
         return (rating <= (sessionOwnerRating + ratingRadius))
                 && (rating >= (sessionOwnerRating - ratingRadius));
+    }
+
+    public void addPlayer(OnlinePlayer player) {
+        session.addPlayer(player);
+    }
+
+    public boolean isFull() {
+        return session.isFull();
+    }
+
+    public Integer getId() {
+        return session.getId();
     }
 }

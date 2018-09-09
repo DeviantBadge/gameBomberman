@@ -3,13 +3,14 @@ package ru.atom.game.gamesession.session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.atom.game.databases.player.PlayerData;
+import ru.atom.game.databases.player.PlayerDataRepository;
 import ru.atom.game.enums.Direction;
 import ru.atom.game.enums.MessageType;
 import ru.atom.game.gamesession.lists.OnlinePlayer;
 import ru.atom.game.gamesession.lists.WaitingPlayersList;
 import ru.atom.game.gamesession.session.processors.BombProcessor;
 import ru.atom.game.gamesession.session.processors.MovingProcessor;
-import ru.atom.game.repos.ConnectionPool;
 import ru.atom.game.socket.message.response.OutgoingMessage;
 import ru.atom.game.socket.message.response.messagedata.Possess;
 import ru.atom.game.socket.message.response.messagedata.Replica;
@@ -35,7 +36,7 @@ public class GameSession extends OnlineSession {
     private GameSessionRepo sessionRepo;
 
     @Autowired
-    private ConnectionPool connections;
+    private PlayerDataRepository playerRepo;
 
     private GameState gameState;
 
@@ -46,7 +47,7 @@ public class GameSession extends OnlineSession {
     private final MovingProcessor movingProcessor;
     private final BombProcessor bombProcessor;
 
-    private final WaitingPlayersList waitingDeisconnect;
+    private final WaitingPlayersList waitingDisconnect;
 
     // add objects to replica where we change them
     private Replica replica;
@@ -69,7 +70,7 @@ public class GameSession extends OnlineSession {
 
         movingProcessor = new MovingProcessor(properties, gameState);
         bombProcessor = new BombProcessor(properties, gameState, creator, replica);
-        waitingDeisconnect = new WaitingPlayersList(3000);
+        waitingDisconnect = new WaitingPlayersList(3000);
     }
 
     //**************************
@@ -95,18 +96,18 @@ public class GameSession extends OnlineSession {
     private void servicesTick(long ms) {
         disconnectWaitingPlayers(ms);
         if (gameState.isGameEnded()) {
-            if(waitingDeisconnect.waitingTime() <= 0) {
+            if(waitingDisconnect.waitingTime() <= 0) {
                 stop();
             }
         }
     }
 
     private void disconnectWaitingPlayers(long ms) {
-        List<OnlinePlayer> players = waitingDeisconnect.tick(ms);
+        List<OnlinePlayer> players = waitingDisconnect.tick(ms);
         players.forEach(player -> {
             String message = JsonHelper.toJson(new OutgoingMessage(MessageType.GAME_OVER, "YOU DIED"));
             sendTo(player, message);
-            connections.unlink(player, this);
+            connections.disconnectFromGame(player, this);
         });
     }
 
@@ -121,13 +122,7 @@ public class GameSession extends OnlineSession {
                 if (playersAmount() < properties.getMaxPlayerAmount()) {
                     sendReplicaTo(order.getPlayerNum(), JsonHelper.toJson(gameState.getFieldReplica()));
                 } else {
-                    clearOrders();
-                    String rep = JsonHelper.toJson(gameState.getFieldReplica());
-                    for (int i = 0; i < playersAmount(); i++)
-                        if (i != order.getPlayerNum())
-                            sendReplicaTo(i, rep);
-                    gameState.recreate();
-                    replica.addAllToReplica(gameState.getFieldReplica());
+                    gameStarted(order.getPlayerNum());
                 }
                 break;
 
@@ -172,6 +167,8 @@ public class GameSession extends OnlineSession {
 
     @Override
     public void addPlayer(OnlinePlayer player) {
+        if (isFull())
+            return;
         super.addPlayer(player);
         gameState.addPlayer();
     }
@@ -180,17 +177,33 @@ public class GameSession extends OnlineSession {
     // TODO третий наоборот все делает с сокетами а первым двум только позволяет произвести какие то действия (реакция на событие, не больше)
     // Все это осложниться тем, что мы будем дисконнектить после определенного события
     @Override
+    // todo решить проблему с ожиданием
     public void onPlayerDisconnect(OnlinePlayer player) {
         int playerNum = playerNum(player);
+        if(playerNum == -1)
+            return;
         if (gameState.isWarmUp()) {
             gameState.getPawns().remove(playerNum);
             removePlayer(playerNum);
         } else {
             gameState.getPawns().get(playerNum).die();
+            if(properties.isRanked())
+                judgeRank(player.getPlayerData());
             if (areAllDead()) {
                 gameEnded();
             }
         }
+    }
+
+    private void gameStarted(int lastPlayerNum) {
+        // sendTo(order.getPlayerNum(), getPossess());
+        clearOrders();
+        String rep = JsonHelper.toJson(gameState.getFieldReplica());
+        for (int i = 0; i < playersAmount(); i++)
+            if (i != lastPlayerNum)
+                sendReplicaTo(i, rep);
+        gameState.recreate();
+        replica.addAllToReplica(gameState.getFieldReplica());
     }
 
     private void gameEnded() {
@@ -203,7 +216,7 @@ public class GameSession extends OnlineSession {
             // todo я сейчас вижу проблему одну, когда игрок отключается от игры мы его будем отключать от сервера, и нужно будет откючить от других сессий, не будет ли с этим проблем?
             // TODO thats what i dislike, it doesnt belong to game process, we have to do it smwhere else
             // It will be solved when i will create rules to classes and their rights
-            connections.unlink(getPlayer(lastPlayer), this);
+            connections.disconnectFromGame(getPlayer(lastPlayer), this);
             sessionRepo.onSessionEnd(this);
         }
     }
@@ -268,11 +281,15 @@ public class GameSession extends OnlineSession {
 
     private void onPlayerDeath(Pawn pawn) {
         pawn.die();
-        waitingDeisconnect.addPlayer(getPlayer(gameState.playerNum(pawn)));
+        waitingDisconnect.addPlayer(getPlayer(gameState.playerNum(pawn)));
     }
 
     private boolean areAllDead() {
         return gameState.deadPawnsAmount() >= properties.getMaxPlayerAmount() - 1;
+    }
+
+    private void judgeRank(PlayerData playerData) {
+        playerData.setRating(playerData.getRating() + 25);
     }
 
     //********************************

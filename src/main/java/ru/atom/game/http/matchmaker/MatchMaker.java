@@ -3,6 +3,7 @@ package ru.atom.game.http.matchmaker;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.atom.game.databases.player.PlayerData;
 import ru.atom.game.gamesession.lists.OnlinePlayer;
 import ru.atom.game.gamesession.properties.GameSessionPropertiesCreator;
 import ru.atom.game.gamesession.session.GameSession;
@@ -10,6 +11,7 @@ import ru.atom.game.http.matchmaker.mmunit.RatingSessionWrapper;
 import ru.atom.game.repos.ConnectionPool;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 
 // TODO we can make it ticker, so he will check every loop each session, how long is player waiting, if very long, we will try to put him (or them) to another sessions
@@ -29,12 +31,7 @@ public class MatchMaker {
     private ConnectionPool pool;
 
 
-    // TODO рейтинг будет переделан в соответствии с моделью - много серверов держащих бомберман, мм является что то вроде распределителя нагрузки
-    // TODO сделать рейтинг - принцип, один большой массив / очередь, хранит все сессии которые она обрабатывает, когда проходим еще раз, мы смотрим,есть ли доступная игра, если нет
-    // TODO то создаем новую, а у пройденных расширяем ненамного область видимости
-    // todo перенести mm в другой проект, остальные отправляют mm запросы после создания и принимают запросы на игры
-
-    Integer getCommonSessionID(String name) {
+    Integer getCommonSessionID(PlayerData playerData, Map<String, Object> data) {
         GameSessionPropertiesCreator creator = beans.getBean(GameSessionPropertiesCreator.class)
                 .setMaxPlayerAmount(3)
                 // .setBlowStopsOnWall(false)
@@ -44,15 +41,21 @@ public class MatchMaker {
                 .setPlayerStopsPlayer(true)
                 .setBombBlowAsOne(false);
         GameSession session = sessionRepo.pollOrCreateCommonSession(creator.createProperties());
-        session.addPlayer(createPlayer(name));
+        OnlinePlayer player = pool.createPlayer(playerData);
+        session.addPlayer(player);
         sessionRepo.putCommonSessionBack(session);
-
         return session.getId();
     }
 
-    Integer getRatingSessionID(String name) {
+    // TODO рейтинг будет переделан в соответствии с моделью - много серверов держащих бомберман, мм является что то вроде распределителя нагрузки
+    // TODO сделать рейтинг - принцип, один большой массив / очередь, хранит все сессии которые она обрабатывает, когда проходим еще раз, мы смотрим,есть ли доступная игра, если нет
+    // TODO то создаем новую, а у пройденных расширяем ненамного область видимости
+    // todo перенести mm в другой проект, остальные отправляют mm запросы после создания и принимают запросы на игры
+
+    Integer getRatingSessionID(PlayerData playerData, Map<String, Object> data) {
         boolean found = false;
-        RatingSessionWrapper ratingSession;
+        RatingSessionWrapper ratingSession = null;
+        OnlinePlayer player;
         final ArrayList<RatingSessionWrapper> ratingSessions = sessionRepo.getRatingSessions();
         GameSessionPropertiesCreator creator = beans.getBean(GameSessionPropertiesCreator.class)
                 .setRanked(true);
@@ -60,29 +63,25 @@ public class MatchMaker {
         synchronized (sessionRepo.getRatingSessions()) {
             for(int i = 0; i < ratingSessions.size(); i ++) {
                 ratingSession = ratingSessions.get(i);
-                if(ratingSession.inRadius(1000)) {
-                    ratingSession.getSession().addPlayer(createPlayer(name));
-                    if(ratingSession.getSession().isFull())
+                if(ratingSession.inRadius(playerData.getRating())) {
+                    player = pool.createPlayer(playerData);
+                    ratingSession.addPlayer(player);
+                    if(ratingSession.isFull())
                         ratingSessions.remove(i);
                     found = true;
                     break;
+                } else {
+                    ratingSession.incRadius(100);
                 }
             }
             if(!found) {
                 ratingSession = sessionRepo.createRatingSession(creator.createProperties());
-                ratingSessions.add(ratingSession);
-            } else {
-                // impossible
-                return -1;
+                player = pool.createPlayer(playerData);
+                ratingSession.addPlayer(player);
+                if(!ratingSession.isFull())
+                    ratingSessions.add(ratingSession);
             }
-            return ratingSession.getSession().getId();
+            return ratingSession.getId();
         }
-    }
-
-    private OnlinePlayer createPlayer(String name) {
-        //todo - move it to another mb func?
-        OnlinePlayer player = new OnlinePlayer(name);
-        pool.addNewPlayer(player);
-        return player;
     }
 }

@@ -21,17 +21,28 @@ MatchMaker.prototype.getSessionId = function (parameters) {
             console.error("Unknown game type - " + parameters.gameType);
             return;
     }
-    GM.credentials.name = Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
     parameters.credentials = GM.credentials;
     var settings = this.getSettings(parameters);
     settings.data = JSON.stringify(parameters);
 
     var sessionId = null;
-    $.ajax(settings).done(function(id) {
-        sessionId = id;
-        console.log("This lobby id - " + id);
+    $.ajax(settings).done(function(response) {
+        sessionId = response.successMessage;
+        console.log("MM response - " + response);
     }).fail(function (jqXHR, textStatus) {
-        alert("Matchmaker request failed");
+        var response = jqXHR.responseJSON;
+        if(response === undefined) {
+            response = jqXHR.responseText;
+            if(response === undefined) {
+                alert("Matchmaker request failed.");
+            } else {
+                alert(response)
+            }
+        } else {
+            alert("Matchmaker request failed.\n" +
+                "Error message: " + response.errorMessage + "\n" +
+                "Probable solution: " + response.solution);
+        }
     });
 
     return sessionId;

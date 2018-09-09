@@ -4,33 +4,29 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.atom.game.databases.player.PlayerData;
 import ru.atom.game.http.message.Credentials;
+import ru.atom.game.http.util.RegularChecks;
 import ru.atom.game.http.util.ResponseFactory;
 
-import java.util.regex.Pattern;
-
-class CredentialsChecker {
-
-    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9-_\\.]{2,20}$");
-    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^[a-zA-Z0-9-_\\.]{6,16}$");
+class RegisterChecker {
 
     // *********************************************
     // Credentials
     // *********************************************
 
-    ResponseEntity<String> checkCredentialsRegisterIn(Credentials credentials) {
+    static ResponseEntity<String> checkCredentialsRegisterIn(Credentials credentials) {
         if(credentials.getName() == null
                 || credentials.getPassword() == null
                 || credentials.getPasswordCopy() == null) {
             return new ResponseEntity<>("Request without needed parameter", HttpStatus.BAD_REQUEST);
         }
-        if (!matchesWithPattern(NAME_PATTERN, credentials.getName())) {
+        if (!RegularChecks.isNameCorrect(credentials.getName())) {
             return ResponseFactory.generateErrorResponse(
                     "Name does not matches with pattern.",
                     "Name must have 2-20 length and contains only latin letters or numbers",
                     HttpStatus.BAD_REQUEST
             );
         }
-        if (!matchesWithPattern(PASSWORD_PATTERN, credentials.getPassword())) {
+        if (!RegularChecks.isPasswordCorrect(credentials.getPassword())) {
             return ResponseFactory.generateErrorResponse(
                     "Password does not matches with pattern.",
                     "Password must have 6-16 length and contains only latin letters or numbers",
@@ -48,19 +44,19 @@ class CredentialsChecker {
         return null;
     }
 
-    ResponseEntity<String> checkCredentialsSignIn(Credentials credentials) {
+    static ResponseEntity<String> checkCredentialsSignIn(Credentials credentials) {
         if(credentials.getName() == null
                 || credentials.getPassword() == null) {
             return new ResponseEntity<>("Request without needed parameter", HttpStatus.BAD_REQUEST);
         }
-        if (!matchesWithPattern(NAME_PATTERN, credentials.getName())) {
+        if (!RegularChecks.isNameCorrect(credentials.getName())) {
             return ResponseFactory.generateErrorResponse(
                     "Name does not matches with pattern.",
                     "Name must have 2-20 length and contains only latin letters or numbers",
                     HttpStatus.BAD_REQUEST
             );
         }
-        if (!matchesWithPattern(PASSWORD_PATTERN, credentials.getPassword())) {
+        if (!RegularChecks.isPasswordCorrect(credentials.getPassword())) {
             return ResponseFactory.generateErrorResponse(
                     "Password does not matches with pattern.",
                     "Password must have 6-16 length and contains only latin letters or numbers",
@@ -70,15 +66,11 @@ class CredentialsChecker {
         return null;
     }
 
-    private boolean matchesWithPattern(Pattern pattern, String value) {
-        return pattern.matcher(value).matches();
-    }
-
     // *********************************************
     // Player Data
     // *********************************************
 
-    ResponseEntity<String> checkRegisterPayerData(Credentials credentials, PlayerData playerData) {
+    static ResponseEntity<String> checkRegisterPayerData(Credentials credentials, PlayerData playerData) {
         if (playerData != null)
             return ResponseFactory.generateErrorResponse(
                     "Player with such name already exists.",
@@ -89,7 +81,7 @@ class CredentialsChecker {
         return null;
     }
 
-    ResponseEntity<String> checkSignInPayerData(Credentials credentials, PlayerData playerData) {
+    static ResponseEntity<String> checkSignInPayerData(Credentials credentials, PlayerData playerData) {
         if (playerData == null)
             return ResponseFactory.generateErrorResponse(
                     "We dont have any player with such name.",
@@ -102,11 +94,11 @@ class CredentialsChecker {
                     "Remember your password and try again.",
                     HttpStatus.BAD_REQUEST
             );
-        if (playerData.isLogged())
+        if (playerData.getPlaying())
             return ResponseFactory.generateErrorResponse(
-                    "Player with such name is already logged in.",
+                    "Player with such name is already playing.",
                     "Try again later.",
-                    HttpStatus.BAD_REQUEST
+                    HttpStatus.CONFLICT
             );
 
         return null;

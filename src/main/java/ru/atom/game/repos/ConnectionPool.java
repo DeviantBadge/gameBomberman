@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import ru.atom.game.databases.player.PlayerData;
 import ru.atom.game.gamesession.lists.OnlinePlayer;
 import ru.atom.game.gamesession.session.GameSession;
 import ru.atom.game.gamesession.session.OnlineSession;
@@ -66,7 +67,7 @@ public class ConnectionPool {
                 .filter(entry -> entry.getValue().equals(player))
                 .map(Map.Entry::getKey)
                 .findFirst()
-                .orElseGet(null);
+                .orElse(null);
     }
 
     public WebSocketSession getSession(String playerName) {
@@ -74,21 +75,21 @@ public class ConnectionPool {
                 .filter(entry -> entry.getValue().getName().equals(playerName))
                 .map(Map.Entry::getKey)
                 .findFirst()
-                .orElseGet(null);
+                .orElse(null);
     }
 
-    public void remove(WebSocketSession session) {
+    private void remove(WebSocketSession session) {
         connectedPlayers.remove(session);
     }
 
-    public void remove(OnlinePlayer player) {
+    private void remove(OnlinePlayer player) {
         if (player.getSocket() == null)
             notConnectedPlayers.remove(player.getName());
         else
             connectedPlayers.remove(player.getSocket());
     }
 
-    public void unlink(OnlinePlayer player, GameSession game) {
+    public void disconnectFromGame(OnlinePlayer player, GameSession game) {
         game.onPlayerDisconnect(player);
         remove(player.getSocket());
         WebSocketSession socket = player.getSocket();
@@ -101,23 +102,18 @@ public class ConnectionPool {
         }
     }
 
-    public void link(OnlinePlayer player, GameSession gameSession) {
+    public boolean connectToGame(OnlinePlayer player, GameSession gameSession) {
         if (!gameSession.onPlayerConnect(player))
-            return;
+            return false;
         player.linkWithSession(gameSession);
+        return true;
     }
 
     //***************************
     // NOT READY PLAYERS FUNC
     //***************************
 
-    public void addNewPlayer(OnlinePlayer player) {
-        if (notConnectedPlayers.putIfAbsent(player.getName(), player) != null) {
-            log.warn("Recreation of player with name " + player.getName());
-        }
-    }
-
-    public OnlinePlayer connected(OnlinePlayer player, WebSocketSession session) {
+    public OnlinePlayer playerConnected(OnlinePlayer player, WebSocketSession session) {
         if (!notConnectedPlayers.remove(player.getName(), player))
             log.warn("Unknown player connecting");
 
@@ -127,7 +123,7 @@ public class ConnectionPool {
         return player;
     }
 
-    public OnlinePlayer connected(String name, WebSocketSession session) {
+    public OnlinePlayer playerConnected(String name, WebSocketSession session) {
         OnlinePlayer player = notConnectedPlayers.remove(name);
         if (player == null) {
             log.warn("Unknown player connecting");
@@ -138,6 +134,15 @@ public class ConnectionPool {
         if (connectedPlayers.putIfAbsent(session, player) != null) {
             log.warn("Reconnecting player to socket, player name " + player.getName());
         }
+        return player;
+    }
+
+    public OnlinePlayer createPlayer(PlayerData playerData) {
+        if (notConnectedPlayers.containsKey(playerData.getName())) {
+            log.warn("Recreation of player with name " + playerData.getName());
+        }
+        OnlinePlayer player = new OnlinePlayer(playerData);
+        notConnectedPlayers.put(playerData.getName(), player);
         return player;
     }
 }

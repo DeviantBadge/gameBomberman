@@ -10,8 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import ru.atom.game.databases.player.PlayerData;
 import ru.atom.game.databases.player.PlayerDataRepository;
+import ru.atom.game.http.message.Credentials;
+import ru.atom.game.http.util.ResponseFactory;
 import ru.atom.game.socket.util.JsonHelper;
 
 import java.util.Map;
@@ -25,48 +27,69 @@ public class MatchMakerController {
     private MatchMaker matchMaker;
 
     @Autowired
-    private PlayerDataRepository playerDataRepository;
+    private PlayerDataRepository playerRepo;
 
     @RequestMapping(
             path = "casual",
             method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> join(@RequestBody String userData) {
+    public ResponseEntity<String> casual(@RequestBody String userData) {
         ResponseEntity<String> response;
-        Map<String, Object> data = JsonHelper.fromJson(userData, Map.class);
-        String name = ((Map) data.get("credentials")).get("name").toString();
+        Map<String, Object> data;
+        Credentials credentials;
+        PlayerData playerData;
 
-        if((response = auth(name)) != null) {
+        System.out.println(userData);
+        data = JsonHelper.fromJson(userData, Map.class);
+        credentials = JsonHelper.fromJson(JsonHelper.toJson(data.get("credentials")), Credentials.class);
+
+
+        response = MatchMakerChecker.checkUserData(data, credentials);
+        if (response != null)
             return response;
-        }
-        Integer id = matchMaker.getCommonSessionID(name);
-        return new ResponseEntity<>(id.toString(), HttpStatus.OK);
+
+        playerData = playerRepo.findByName(credentials.getName());
+        response = MatchMakerChecker.checkSignInPayerData(credentials, playerData);
+        if (response != null)
+            return response;
+
+        Integer id = matchMaker.getCommonSessionID(playerData, data);
+        return ResponseFactory.generateOkResponse(id.toString(), HttpStatus.OK);
     }
 
     @RequestMapping(
-            path = "rating",
+            path = "ranked",
             method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> rating(@RequestBody String userData) {
+        System.out.println("hahahahaha");
         ResponseEntity<String> response;
-        Map<String, Object> data = JsonHelper.fromJson(userData, Map.class);
-        String name = ((Map) data.get("credentials")).get("name").toString();
+        Map<String, Object> data;
+        Credentials credentials;
+        PlayerData playerData;
 
-        if((response = auth(name)) != null) {
+        System.out.println(userData);
+        data = JsonHelper.fromJson(userData, Map.class);
+        credentials = JsonHelper.fromJson(JsonHelper.toJson(data.get("credentials")), Credentials.class);
+        System.out.println("hahahahaha");
+
+
+        response = MatchMakerChecker.checkUserData(data, credentials);
+        if (response != null)
             return response;
-        }
 
-        Integer id = matchMaker.getRatingSessionID(name);
-        return new ResponseEntity<>(id.toString(), HttpStatus.OK);
+        playerData = playerRepo.findByName(credentials.getName());
+        System.out.println(playerData);
+        response = MatchMakerChecker.checkSignInPayerData(credentials, playerData);
+        if (response != null)
+            return response;
+
+        Integer id = matchMaker.getRatingSessionID(playerData, data);
+        System.out.println(id);
+        return ResponseFactory.generateOkResponse(id.toString(), HttpStatus.OK);
     }
 
     private ResponseEntity<String> auth(String name) {
-        /*
-        List<PlayerData> player = playerDataRepository.findByName(name);
-        if(player.size() == 0) {
-            return new ResponseEntity<>("Cant find this user", HttpStatus.NOT_FOUND);
-        }
-        */
         return null;
     }
 }

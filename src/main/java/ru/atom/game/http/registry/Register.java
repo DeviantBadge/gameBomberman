@@ -10,18 +10,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import ru.atom.game.databases.player.PlayerData;
 import ru.atom.game.databases.player.PlayerDataRepository;
-import ru.atom.game.http.matchmaker.MatchMaker;
 import ru.atom.game.http.message.Credentials;
-import ru.atom.game.http.message.ResponseError;
 import ru.atom.game.http.util.ResponseFactory;
 import ru.atom.game.socket.util.JsonHelper;
-import sun.misc.Regexp;
-
-import java.util.Map;
-import java.util.regex.Pattern;
 
 @Controller
 @RequestMapping("registry")
@@ -29,11 +22,7 @@ public class Register {
     private static final Logger log = LoggerFactory.getLogger(Register.class);
 
     @Autowired
-    private MatchMaker matchMaker;
-
-    @Autowired
     private PlayerDataRepository playerRepo;
-    private CredentialsChecker checker = new CredentialsChecker();
 
     @RequestMapping(
             path = "signIn",
@@ -44,16 +33,19 @@ public class Register {
         ResponseEntity<String> response;
         PlayerData playerData;
 
-        response = checker.checkCredentialsSignIn(credentials);
+        response = RegisterChecker.checkCredentialsSignIn(credentials);
         if (response != null)
             return response;
 
         playerData = playerRepo.findByName(credentials.getName());
-        response = checker.checkSignInPayerData(credentials, playerData);
+        response = RegisterChecker.checkSignInPayerData(credentials, playerData);
         if (response != null)
             return response;
 
-        return new ResponseEntity<>("0", HttpStatus.OK);
+        if (playerRepo.savePlayer(playerData))
+            return ResponseFactory.generateOkResponse("You are signed in", HttpStatus.OK);
+        else
+            return ResponseFactory.generateErrorResponse("Failed to log in", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @RequestMapping(
@@ -65,12 +57,12 @@ public class Register {
         ResponseEntity<String> response;
         PlayerData playerData;
 
-        response = checker.checkCredentialsRegisterIn(credentials);
+        response = RegisterChecker.checkCredentialsRegisterIn(credentials);
         if (response != null)
             return response;
 
         playerData = playerRepo.findByName(credentials.getName());
-        response = checker.checkRegisterPayerData(credentials, playerData);
+        response = RegisterChecker.checkRegisterPayerData(credentials, playerData);
         if (response != null)
             return response;
 
@@ -79,7 +71,6 @@ public class Register {
         if (response != null)
             return response;
         return ResponseFactory.generateOkResponse("You are registred", HttpStatus.OK);
-        //return new ResponseEntity<>(playerData.toString(), HttpStatus.OK);
     }
 
     private ResponseEntity<String> addNewPlayerToDB(PlayerData playerData) {
