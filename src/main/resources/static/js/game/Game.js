@@ -13,13 +13,15 @@ var Game = function (stage) {
 Game.prototype.start = function (gameID) {
     gInputEngine.setupBindings();
     this.serverProxy = new ServerProxy();
-    this.serverProxy.connectToGameServer(gameID);
+    if(!this.serverProxy.connectToGameServer(gameID))
+        return false;
     this.drawBackground();
 
     var self = this;
     createjs.Ticker.addEventListener('tick', function () {
         self.update();
     });
+    return true;
 };
 
 Game.prototype.update = function () {

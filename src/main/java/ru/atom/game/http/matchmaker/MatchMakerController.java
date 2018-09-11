@@ -39,7 +39,6 @@ public class MatchMakerController {
         Credentials credentials;
         PlayerData playerData;
 
-        System.out.println(userData);
         data = JsonHelper.fromJson(userData, Map.class);
         credentials = JsonHelper.fromJson(JsonHelper.toJson(data.get("credentials")), Credentials.class);
 
@@ -68,7 +67,6 @@ public class MatchMakerController {
         Credentials credentials;
         PlayerData playerData;
 
-        System.out.println(userData);
         data = JsonHelper.fromJson(userData, Map.class);
         credentials = JsonHelper.fromJson(JsonHelper.toJson(data.get("credentials")), Credentials.class);
         System.out.println("hahahahaha");

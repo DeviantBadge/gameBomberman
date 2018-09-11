@@ -102,6 +102,13 @@ GameMaster.prototype.startGame = function (gameID) {
     this.gameId = gameID;
     this.game = new Game(this.gameStage);
     this.game.start(gameID);
+    this.cancelStart();
+};
+
+GameMaster.prototype.cancelStart = function () {
+    this.menu.show();
+    this.gameId = "";
+    this.game = null;
 };
 
 GameMaster.prototype.finishGame = function (gameOverText) {

@@ -48,7 +48,6 @@ public class SockEventHandler extends TextWebSocketHandler {
             session.close();
             return;
         }
-
         OnlinePlayer player = loginPlayer(session, uriParams);
         if (player == null) {
             log.error("Could not log in player");
@@ -96,6 +95,8 @@ public class SockEventHandler extends TextWebSocketHandler {
     }
 
 
+    // todo слишком долго из базы берет данные (решение - проверять все тупо в другом процессе и затем прислать результат обратно)
+    // клиент в это время останавливает загрузку игры и возобновляет только после получения сигнала
     private OnlinePlayer loginPlayer(WebSocketSession session, Map<String, String> uriParams) {
         String name = uriParams.get("name");
         String password = uriParams.get("password");
