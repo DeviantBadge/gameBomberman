@@ -72,6 +72,7 @@ ServerProxy.prototype.connectToGameServer = function (gameId) {
 
     this.setupMessaging();
     self._prepared = true;
+    return true;
 };
 
 ServerProxy.prototype.isReady = function () {

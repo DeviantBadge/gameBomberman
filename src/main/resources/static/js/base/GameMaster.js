@@ -101,8 +101,8 @@ GameMaster.prototype.startGame = function (gameID) {
     this.menu.hide();
     this.gameId = gameID;
     this.game = new Game(this.gameStage);
-    this.game.start(gameID);
-    this.cancelStart();
+    if(!this.game.start(gameID))
+        this.cancelStart();
 };
 
 GameMaster.prototype.cancelStart = function () {

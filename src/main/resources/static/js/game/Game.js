@@ -11,10 +11,10 @@ var Game = function (stage) {
 };
 
 Game.prototype.start = function (gameID) {
-    gInputEngine.setupBindings();
     this.serverProxy = new ServerProxy();
     if(!this.serverProxy.connectToGameServer(gameID))
         return false;
+    gInputEngine.setupBindings();
     this.drawBackground();
 
     var self = this;

@@ -14,15 +14,11 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
     @Autowired
     private SockEventHandler handler;
 
-    @Autowired
-    private HandshakeHandler handshakeHandler;
-
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(handler, "/events/connect")
                 .setAllowedOrigins("*")
                 .withSockJS()
-                .setInterceptors(handshakeHandler)
         ;
     }
 }

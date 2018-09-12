@@ -57,10 +57,11 @@ public class SockEventHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
-        System.out.println("ijjbjhkkgbadfjvbsdf");
         IncomingMessage mes = JsonHelper.fromJson(message.getPayload(), IncomingMessage.class);
         OnlinePlayer player = connections.getPlayer(session);
         GameSession gameSession = sessions.getSession(mes.getGameId());
+        System.out.println(mes.getGameId());
+        System.out.println(message.getPayload());
 
         if (!confirmPrivacy(player, mes, gameSession))
             return;
@@ -101,13 +102,7 @@ public class SockEventHandler extends TextWebSocketHandler {
         String name = uriParams.get("name");
         String password = uriParams.get("password");
         String gameId = uriParams.get("gameId");
-        PlayerData playerData;
-
-        playerData = playerRepo.findByName(name);
-        if (playerData == null
-                || !password.equals(playerData.getPassword())
-                || playerData.getPlaying())
-            return null;
+        // todo make auth code
 
         OnlinePlayer player = connections.playerConnected(name, session);
         if (player == null) {
@@ -116,12 +111,9 @@ public class SockEventHandler extends TextWebSocketHandler {
         }
 
         GameSession gameSession = sessions.getSession(gameId);
+        System.out.println(gameSession);
         if (connections.connectToGame(player, gameSession)) {
-            playerData.setPlaying(true);
-            if (playerRepo.savePlayer(playerData))
                 return player;
-            else
-                return null;
         }
         return null;
     }
